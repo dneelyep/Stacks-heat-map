@@ -1,0 +1,17 @@
+* Stacks heat map project
+** Goal
+The basic goal of this project is to create a visual heat map of the cleanliness of 
+the stacks, based on how long it's been since an area has seen pick up.
+** How to do it
+*** Create a visual map of the stacks, with each range and floor we're responsible for represented.
+*** Given that map, allow the user to click a range and set the time that range last saw pickup.
+*** Also allow the user to set how long they want for each category (green = 0-15 days, orange = 16-30 days, red = 31+ days, etc)
+*** After a range's last time is stored, change the color of the range depending on if it has been picked up recently or not.
+** Long term goal
+*** Fully automate this process
+*** Partially automate this process
+**** Whenever we get stats input from google docs, send an email to Rob telling him to add those stats to the map.
+** Implementation
+*** A class Floor to represent each floor, which contains an ArrayList of Ranges.
+*** A class Range to represent a single range of books. Contains fields startCallNumber and endCallNumber. Also contains a date lastChecked.
+*** A GUI class to handle displaying all of this info. graphically.
