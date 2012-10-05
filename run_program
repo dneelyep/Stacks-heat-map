@@ -2,5 +2,5 @@
 
 # Script to run the main program.
 cd bin/
-java com.heatmap.GUI
+java -jar heatmap.jar
 cd - > /dev/null

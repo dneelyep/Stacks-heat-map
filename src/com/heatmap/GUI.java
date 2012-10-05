@@ -2,14 +2,17 @@ package com.heatmap;
 
 import javax.swing.JApplet;
 
-/** GUI.java - <description here>
+/** GUI.java - Class that holds the primary GUI for the program.
  *
  * @author Daniel Neel */
-public class GUI { 
+public class GUI extends JApplet {
+
+    public static void main(String[] args) {
+	System.out.println("Test again.");
+    }
 
     /** <Main method javadocs> */
-    public static void main(String args[]) {
-	System.out.println("Testing");
-        //...code here...
+    public void init() {
+	System.out.println("Testing...");
     }
 }
