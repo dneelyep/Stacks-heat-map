@@ -17,10 +17,12 @@ public class GUI extends JApplet {
     public void init() {
 	try {
             SwingUtilities.invokeAndWait(new Runnable() {
-		    public void run() {
-			JLabel lbl = new JLabel("Hello World");
-			add(lbl);
-		    }
+            	public void run() {
+            		JLabel lbl = new JLabel("YIPPEE! Finally!");
+            		add(lbl);
+            		JLabel testLabel = new JLabel("Testing.");
+            		add(testLabel);
+            	}
 		});
         } catch (Exception e) {
             System.err.println("createGUI didn't complete successfully");
