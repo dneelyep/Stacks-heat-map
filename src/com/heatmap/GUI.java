@@ -7,7 +7,6 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.ImageIcon;
 import javax.swing.JApplet;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -27,6 +26,9 @@ public class GUI extends JApplet implements ActionListener {
 	
 	/** Panel that contains the components for the shelf map. */
 	private JPanel floorComponents;
+	
+	/** The Floor currently being viewed by the user. */
+	private int currentFloor = 0;
 
     /** TODO <Main method javadocs> */
     public void init() {
@@ -71,11 +73,28 @@ public class GUI extends JApplet implements ActionListener {
     	floorComponents = new JPanel();
     	add(floorComponents, g);
     	
+    	JLabel test = new JLabel("Test");
+    	floorComponents.add(test);
+    	
     	makeFourthFloor();
+    }
+    
+    /** Display the GUI components for the third floor of the library. */
+    public void makeThirdFloor() {
+    	floorComponents.removeAll();
+    	floorComponents.add(new JLabel("This is the 3rd floor!"));
+    	floorComponents.add(new JLabel("Second test label"));
+    	floorComponents.add(new JButton("And third label"));
+    	floorComponents.revalidate();
     }
     
     /** Display the GUI components for the fourth floor of the library. */
     public void makeFourthFloor() {
+    	floorComponents.removeAll();
+    	floorComponents.add(new JLabel("4th floor!"));
+    	floorComponents.add(new JLabel("Second test label"));
+    	floorComponents.add(new JButton("And third Button"));
+    	floorComponents.revalidate();
     	//g.gridx = 1;
     	//g.gridy = 14;
     	
@@ -85,22 +104,17 @@ public class GUI extends JApplet implements ActionListener {
     	//}
     }
     
-    /** Display the GUI components for the third floor of the library. */
-    public void makeThirdFloor() {
-    	floorComponents.add(new JLabel("Test label"));
-    	floorComponents.add(new JLabel("Second test label"));
-    	floorComponents.add(new JLabel("And third label"));
-    }
-    
     public void actionPerformed(ActionEvent e) {
     	JButton j = (JButton) e.getSource();
     	System.out.println(j.getText());
     	
-    	if (j.getText().equals("Third floor")) {
+    	if (j.getText().equals("3rd floor") && currentFloor != 3) {
     		makeThirdFloor();
+    		currentFloor = 3;
     	}
-    	else if (j.getText().equals("Fourth floor")) {
+    	else if (j.getText().equals("4th floor") && currentFloor != 4) {
     		makeFourthFloor();
+    		currentFloor = 4;
     	}
     }
 }
