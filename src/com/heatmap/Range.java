@@ -22,4 +22,14 @@ public class Range {
 		YCOORD = y;
 	}
 	
+	/** Get this Range's x-coordinate. */
+	public int getXCoord() {
+		return XCOORD;
+	}
+	
+	/** Get this Range's y-coordinate. */
+	public int getYCoord() {
+		return YCOORD;		
+	}
+	
 }
