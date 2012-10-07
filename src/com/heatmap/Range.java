@@ -10,4 +10,16 @@ public class Range {
 	
 	/** The number of days since this range has last had a pickup done on it. */
 	private int daysSinceLastChecked;
+	
+	/** This Range's x-coordinate in the GUI. */
+	private final int XCOORD;
+	
+	/** This Range's y-coordinate in the GUI. */
+	private final int YCOORD;
+	
+	public Range(int x, int y) {
+		XCOORD = x;
+		YCOORD = y;
+	}
+	
 }
