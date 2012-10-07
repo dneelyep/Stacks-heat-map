@@ -9,11 +9,11 @@ public class Floor {
 	/** Create a new Floor using floorNumber to determine layout. */
 	public Floor(int floorNumber) {
 		if (floorNumber == 3) {
-			ranges = new ArrayList<Range>(163);
+			ranges = new ArrayList<>(163);
 			//makeThirdFloor();
 		}
 		else if (floorNumber == 4) {
-			ranges = new ArrayList<Range>(93);
+			ranges = new ArrayList<>(93);
 			makeFourthFloor();
 		}
 	}
