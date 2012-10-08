@@ -6,6 +6,8 @@ import java.awt.GridBagLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.JApplet;
 import javax.swing.JButton;
@@ -16,7 +18,7 @@ import javax.swing.SwingUtilities;
 /** GUI.java - Class that holds the primary GUI for the program.
  *
  * @author Daniel Neel */
-public class GUI extends JApplet implements ActionListener {
+public class GUI extends JApplet implements ActionListener, MouseListener {
 	
 	/** Button to allow the user to view the 3rd floor's status. */
 	private JButton thirdFloorButton;
@@ -33,13 +35,25 @@ public class GUI extends JApplet implements ActionListener {
 	/** Panel that contains the components for the shelf map. */
 	private JPanel floorComponents;
 	
+	/** Label that displays the starting call number for the 
+	 * currently moused-over Range. */
+	private JLabel rangeStart;
+	
+	/** Label that displays the ending call number for the 
+	 * currently moused-over Range. */
+	private JLabel rangeEnd;
+
+	/** Label that displays the number of days since the currently 
+	 * moused-over Range has been checked. */
+	private JLabel daysSinceChecked;
+
 	/** Constraints used to place components in floorComponents. */
 	private GridBagConstraints fCConstraints;
 	
 	/** The Floor currently being viewed by the user. */
 	private int currentFloor = 0;
 
-    /** TODO <Main method javadocs> */
+    /** Attempt to initialize the GUI for this program. */
 	@Override
     public void init() {
     	try {
@@ -88,35 +102,54 @@ public class GUI extends JApplet implements ActionListener {
     	floorComponents.setLayout(new GridBagLayout());
     	add(floorComponents, g);
     	
+    	g.gridx = 2;
+    	g.gridy = 0;
+    	add(new JLabel("Range start:"), g);
+    	
+    	g.gridy = 1;
+    	add(new JLabel("Range end:"), g);
+    	
+    	g.gridy = 2;
+    	add(new JLabel("Days since checked:"), g);
+    	
+    	g.gridx = 3;
+    	g.gridy = 0;
+    	rangeStart = new JLabel("<start>");
+    	add(rangeStart, g);
+    	
+    	g.gridy = 1;
+    	rangeEnd = new JLabel("<end>");
+    	add(rangeEnd, g);
+    	
+    	g.gridy = 2;
+    	daysSinceChecked = new JLabel("<dayssincechecked>");
+    	add(daysSinceChecked, g);
+
     	fCConstraints = new GridBagConstraints();
     }
     
     /** Display the GUI components for the third floor of the library. */
-    public void makeThirdFloor() {
+    public void displayThirdFloor() {
     	floorComponents.removeAll();
     	
-    	fCConstraints.gridx = 0;
-    	fCConstraints.gridy = 0;
-    	floorComponents.add(new JLabel("This is the 3rd floor!"), fCConstraints);
-
-    	fCConstraints.gridx = 1;
-    	fCConstraints.gridy = 1;
-    	floorComponents.add(new JLabel("Second test label"), fCConstraints);
+    	for (Range r : thirdFloor.getRanges()) {
+    		fCConstraints.gridx = r.getXCoord();
+    		fCConstraints.gridy = r.getYCoord();
+    		r.addMouseListener(this);
+    		floorComponents.add(r, fCConstraints);
+    	}
     	
-    	fCConstraints.gridx = 2;
-    	fCConstraints.gridy = 2;
-    	floorComponents.add(new JButton("And third label"), fCConstraints);
     	floorComponents.revalidate();
     }
     
     /** Display the GUI components for the fourth floor of the library. */
-    public void makeFourthFloor() {
+    public void displayFourthFloor() {
     	floorComponents.removeAll();
     	
     	for (Range r : fourthFloor.getRanges()) {
     		fCConstraints.gridx = r.getXCoord();
     		fCConstraints.gridy = r.getYCoord();
-    		floorComponents.add(new JLabel("Range (" + r.getXCoord() + "," + r.getYCoord() + ")"), fCConstraints);
+    		floorComponents.add(r, fCConstraints);
     	}
 
     	floorComponents.revalidate();
@@ -127,12 +160,33 @@ public class GUI extends JApplet implements ActionListener {
     	System.out.println(j.getText());
     	
     	if (j.getText().equals("3rd floor") && currentFloor != 3) {
-    		makeThirdFloor();
+    		displayThirdFloor();
     		currentFloor = 3;
     	}
     	else if (j.getText().equals("4th floor") && currentFloor != 4) {
-    		makeFourthFloor();
+    		displayFourthFloor();
     		currentFloor = 4;
     	}
+    }
+    
+    public void mouseClicked(MouseEvent e) {
+    	
+    }
+    
+    public void mouseEntered(MouseEvent e) {
+    	Range r = (Range) e.getSource();
+    	rangeStart.setText(r.getRangeStart());
+    	rangeEnd.setText(r.getRangeEnd());
+    	daysSinceChecked.setText(Integer.toString(r.getDaysSinceChecked()));
+    }
+    
+    // TODO Try to find a way of using MouseListener or ActionListener, rather than both.
+    public void mouseExited(MouseEvent e) {
+    }
+    
+    public void mousePressed(MouseEvent e) {
+    }
+    
+    public void mouseReleased(MouseEvent e) {
     }
 }
