@@ -127,48 +127,40 @@ public class GUI extends JApplet implements ActionListener, MouseListener {
 
     	fCConstraints = new GridBagConstraints();
     }
-    
-    /** Display the GUI components for the third floor of the library. */
-    public void displayThirdFloor() {
-    	floorComponents.removeAll();
-    	
-    	for (Range r : thirdFloor.getRanges()) {
-    		fCConstraints.gridx = r.getXCoord();
-    		fCConstraints.gridy = r.getYCoord();
-    		r.addMouseListener(this);
-    		floorComponents.add(r, fCConstraints);
-    	}
-    	
-    	floorComponents.revalidate();
-    }
-    
-    /** Display the GUI components for the fourth floor of the library. */
-    public void displayFourthFloor() {
-    	floorComponents.removeAll();
-    	
-    	for (Range r : fourthFloor.getRanges()) {
-    		fCConstraints.gridx = r.getXCoord();
-    		fCConstraints.gridy = r.getYCoord();
-    		floorComponents.add(r, fCConstraints);
-    	}
 
-    	floorComponents.revalidate();
+    /** Display a given Floor f's Ranges on this GUI. */
+    public void displayFloor(Floor f) {
+    	if (f != thirdFloor && f!= fourthFloor) {
+    		System.out.println("Error! Tried to display a Floor that does not exist.");
+    	}
+    	else {
+    		floorComponents.removeAll();
+    		
+    		for (Range r : f.getRanges()) {
+    			fCConstraints.gridx = r.getXCoord();
+    			fCConstraints.gridy = r.getYCoord();
+    			r.addMouseListener(this);
+    			floorComponents.add(r, fCConstraints);
+    		}
+    		
+    		floorComponents.revalidate();
+    	}
     }
-    
+
     public void actionPerformed(ActionEvent e) {
     	JButton j = (JButton) e.getSource();
     	System.out.println(j.getText());
     	
     	if (j.getText().equals("3rd floor") && currentFloor != 3) {
-    		displayThirdFloor();
+    		displayFloor(thirdFloor);
     		currentFloor = 3;
     	}
     	else if (j.getText().equals("4th floor") && currentFloor != 4) {
-    		displayFourthFloor();
+    		displayFloor(fourthFloor);
     		currentFloor = 4;
     	}
     }
-    
+
     public void mouseClicked(MouseEvent e) {
     	
     }
