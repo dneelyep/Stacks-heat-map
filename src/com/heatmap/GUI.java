@@ -51,7 +51,7 @@ public class GUI extends JApplet implements ActionListener, MouseListener {
 	private GridBagConstraints fCConstraints;
 	
 	/** The Floor currently being viewed by the user. */
-	private int currentFloor = 0;
+	private Floor currentFloor = null;
 
     /** Attempt to initialize the GUI for this program. */
 	@Override
@@ -151,20 +151,22 @@ public class GUI extends JApplet implements ActionListener, MouseListener {
     	JButton j = (JButton) e.getSource();
     	System.out.println(j.getText());
     	
-    	if (j.getText().equals("3rd floor") && currentFloor != 3) {
+    	if (j.getText().equals("3rd floor") && currentFloor != thirdFloor) {
     		displayFloor(thirdFloor);
-    		currentFloor = 3;
+    		currentFloor = thirdFloor;
     	}
-    	else if (j.getText().equals("4th floor") && currentFloor != 4) {
+    	else if (j.getText().equals("4th floor") && currentFloor != fourthFloor) {
     		displayFloor(fourthFloor);
-    		currentFloor = 4;
+    		currentFloor = fourthFloor;
     	}
     }
 
     public void mouseClicked(MouseEvent e) {
     	
     }
-    
+
+    /** Update the GUI components that display information about the 
+     * currently moused-over Range. */
     public void mouseEntered(MouseEvent e) {
     	Range r = (Range) e.getSource();
     	rangeStart.setText(r.getRangeStart());
