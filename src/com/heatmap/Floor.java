@@ -51,16 +51,13 @@ public class Floor {
 	    			Elements rangeElements = root.getChildElements();
 	    			
 	    			for (int i = 0; i < rangeElements.size(); i++) {
-	    				String tmpX = rangeElements.get(i).getFirstChildElement("x").getValue();
-	    				String tmpY = rangeElements.get(i).getFirstChildElement("y").getValue();
+	    				Element e = rangeElements.get(i);
+	    				String tmpX = e.getFirstChildElement("x").getValue();
+	    				String tmpY = e.getFirstChildElement("y").getValue();
 	    				ranges.add(new Range(Integer.parseInt(tmpX), Integer.parseInt(tmpY)));
-	    				// TODO Also use the following to set other parameters.
-//	    				String tmpBegin = ranges.get(i).getFirstChildElement("begin").getValue();
-//	    				String tmpEnd = ranges.get(i).getFirstChildElement("end").getValue();
-//	    				String tmpLastChecked= ranges.get(i).getFirstChildElement("last-checked").getValue();
-//	    				System.out.println("x: " + tmpX + " y: " + tmpY
-//	    			                     + " Begin: " + tmpBegin + " End: " + tmpEnd 
-//	    						         + " Last checked: " + tmpLastChecked);
+	    				ranges.get(i).setStart(e.getFirstChildElement("begin").getValue());
+	    				ranges.get(i).setEnd(e.getFirstChildElement("end").getValue());
+	    				ranges.get(i).setLastChecked(e.getFirstChildElement("last-checked").getValue());
 	    			}
 	    		}
 	        	catch (ParsingException e) {

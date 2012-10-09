@@ -49,4 +49,24 @@ public class Range extends JLabel {
 	public int getDaysSinceChecked() {
 		return daysSinceLastChecked;
 	}
+	
+	/** Set this Range's start call number to a new value start. */
+	public void setStart(String start) {
+		startCallNumber = start;
+	}
+	
+	/** Set this Range's end call number to a new value end. */
+	public void setEnd(String end) {
+		endCallNumber = end;
+	}
+	
+	/** Set this Range's last checked date to a new value newLastChecked. */
+	public void setLastChecked(String newLastChecked) {
+		if (newLastChecked.isEmpty() == false) {
+			daysSinceLastChecked = Integer.parseInt(newLastChecked);
+		}
+		else {
+			daysSinceLastChecked = -1;
+		}
+	}
 }
