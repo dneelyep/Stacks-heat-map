@@ -1,6 +1,13 @@
 package com.heatmap;
 
+import java.io.IOException;
 import java.util.ArrayList;
+
+import nu.xom.Builder;
+import nu.xom.Document;
+import nu.xom.Element;
+import nu.xom.Elements;
+import nu.xom.ParsingException;
 
 /** Class to represent a floor in the library. */
 public class Floor {
@@ -10,6 +17,10 @@ public class Floor {
 	
 	/** Value to indicate whether or not this Floor has yet been created. */
 	private Boolean initialized = false;
+	
+	/** An XML Document that holds the information for each Range object 
+	 * on this Floor. */
+	private Document floorDataFile;
 
 	/** Create a new Floor using floorNumber to determine layout. */
 	public Floor(int floorNumber) {
@@ -29,108 +40,65 @@ public class Floor {
 		// only allowing it to be initialized once as I'm doing here. Maybe an enumeration?
 		// Or make ranges final, so it can't be overridden later?
 		if (initialized == false) {
-
-			for (int x = 1; x < 3; x++) {
-				for (int y = 6; y < 19; y++) {
-					ranges.add(new Range(x, y));
-				}
-				
-				for (int y = 20; y < 35; y++) {
-					ranges.add(new Range(x, y));
-				}
-			}
-			
-			for (int y = 0; y < 7; y++) {
-				ranges.add(new Range(3, y));
-			}
-			
-			for (int y = 0; y < 24; y++) {
-				ranges.add(new Range(5, y));
-			}
-			
-			for (int x = 6; x < 8; x++) {
-				for (int y = 0; y < 12; y++) {
-					ranges.add(new Range(x, y));
-				}
-				
-				for (int y = 13; y < 24; y++) {
-					ranges.add(new Range(x, y));					
-				}
-				
-				for (int y = 25; y < 40; y++) {
-					ranges.add(new Range(x, y));					
-				}
-			}
+    		try {
+    	    	Document doc = new Builder().build("../res/floorData/thirdFloor.xml");
+    			Element root = doc.getRootElement();
+    			Elements rangeElements = root.getChildElements();
+    			
+    			for (int i = 0; i < rangeElements.size(); i++) {
+    				String tmpX = rangeElements.get(i).getFirstChildElement("x").getValue();
+    				String tmpY = rangeElements.get(i).getFirstChildElement("y").getValue();
+    				ranges.add(new Range(Integer.parseInt(tmpX), Integer.parseInt(tmpY)));
+    				// TODO Also use the following to set other parameters.
+//    				String tmpBegin = ranges.get(i).getFirstChildElement("begin").getValue();
+//    				String tmpEnd = ranges.get(i).getFirstChildElement("end").getValue();
+//    				String tmpLastChecked= ranges.get(i).getFirstChildElement("last-checked").getValue();
+//    				System.out.println("x: " + tmpX + " y: " + tmpY
+//    			                     + " Begin: " + tmpBegin + " End: " + tmpEnd 
+//    						         + " Last checked: " + tmpLastChecked);
+    			}
+    		}
+        	catch (ParsingException e) {
+        		System.err.println("Error parsing this Floor's XML file.");
+        	}
+        	catch (IOException e) {
+        		System.err.println("IOException: " + e);
+        	}
 		}
 
 		initialized = true;
 	}
-    
+
+	// TODO Try to make a more general makeFloor() method.
     /** Create a set of Ranges that represents the fourth floor of the library. */
     public void makeFourthFloor() {
     	if (initialized == false) {
-    		// Add the bottom left ranges.
-    		for (int y = 14; y < 29; y++) {
-    			ranges.add(new Range(1, y));
-    			ranges.add(new Range(2, y));
-    		}	
-    	
-    		// Add the top right ranges.
-    		for (int y = 2; y < 13; y++) {
-    			ranges.add(new Range(5, y));
-    			ranges.add(new Range(6, y));
-    			ranges.add(new Range(7, y));
+    		try {
+    	    	Document doc = new Builder().build("../res/floorData/fourthFloor.xml");
+    			Element root = doc.getRootElement();
+    			Elements rangeElements = root.getChildElements();
+    			
+    			for (int i = 0; i < rangeElements.size(); i++) {
+    				String tmpX = rangeElements.get(i).getFirstChildElement("x").getValue();
+    				String tmpY = rangeElements.get(i).getFirstChildElement("y").getValue();
+    				ranges.add(new Range(Integer.parseInt(tmpX), Integer.parseInt(tmpY)));
+    				// TODO Also use the following to set other parameters.
+//    				String tmpBegin = ranges.get(i).getFirstChildElement("begin").getValue();
+//    				String tmpEnd = ranges.get(i).getFirstChildElement("end").getValue();
+//    				String tmpLastChecked= ranges.get(i).getFirstChildElement("last-checked").getValue();
+//    				System.out.println("x: " + tmpX + " y: " + tmpY
+//    			                     + " Begin: " + tmpBegin + " End: " + tmpEnd 
+//    						         + " Last checked: " + tmpLastChecked);
+    			}
     		}
-    	
-    	
-    		// Add the bottom right ranges.
-    		for (int y = 14; y < 29; y++) {
-    			ranges.add(new Range(5, y));
-    			ranges.add(new Range(7, y));
-    		}
-    	
-    		// Add the top right three shelves.
-    		for (int x = 5; x < 8; x++) {
-    			ranges.add(new Range(x, 0));
-    		}
-    	
-    		// TODO Add in the below empty space?
-    	
-    		// Add the empty chairs along the left side of the floor.
-    		/*fCConstraints.gridx = 0;
-    		for (int y = 0; y < 29; y++) {
-    		    fCConstraints.gridy = y;
-    		    floorComponents.add(new JLabel("Chairs   "), fCConstraints);
-    		}
-    	
-	    	// Add the middle stretch of empty space on the fourth floor.
-	    	for (int x = 3; x < 5; x++) {
-				fCConstraints.gridx = x;
-	    		for (int y = 0; y < 29; y++) {
-	    			fCConstraints.gridy = y;
-	    			floorComponents.add(new JLabel("   Middle stretch   "), fCConstraints);
-	    		}
-	    	}
-    	
-	    	fCConstraints.gridy = 1;
-	    	for (int x = 5; x < 8; x++) {
-	    		fCConstraints.gridx = x;
-	    		floorComponents.add(new JLabel("Space"), fCConstraints);
-	    	}
-	    	
-	   	
-	    	fCConstraints.gridy = 13;
-	    	for (int x = 5; x < 8; x++) {
-	    		fCConstraints.gridx = x;
-	    		floorComponents.add(new JLabel("Space"), fCConstraints);
-	    	}
-	    	
-	    	// Add the chairs on the right side of the fourth floor.
-	    	fCConstraints.gridx = 8;
-	    	for (int y = 0; y < 29; y++) {
-	    		fCConstraints.gridy = y;
-	    		floorComponents.add(new JLabel("   Chairs"), fCConstraints);
-	    	}*/
+        	catch (ParsingException e) {
+        		System.err.println("Error parsing this Floor's XML file.");
+        	}
+        	catch (IOException e) {
+        		System.err.println("IOException: " + e);
+        	}
+
+    		// TODO Add in the empty space so the map looks a bit closer to the layout?
     	}
     	initialized = true;
     }
@@ -138,6 +106,11 @@ public class Floor {
     /** Get an ArrayList of this Floor's Ranges.*/
     public ArrayList<Range> getRanges() {
     	return ranges;
+    }
+    
+    /** Return this Floor's data file. */
+    public Document getFloorDataFile() {
+    	return floorDataFile;    	
     }
 }
 

@@ -8,7 +8,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.IOException;
 
 import javax.swing.JApplet;
 import javax.swing.JButton;
@@ -16,11 +15,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Elements;
-import nu.xom.ParsingException;
 
 /** GUI.java - Class that holds the primary GUI for the program.
  *
@@ -132,33 +129,6 @@ public class GUI extends JApplet implements ActionListener, MouseListener {
     	daysSinceChecked = new JLabel("<dayssincechecked>");
     	add(daysSinceChecked, g);
     	
-    	// TODO Put this file reading code into a method so I can use it with various Floors.
-    	try {
-    		Builder parser = new Builder();
-    		Document doc = parser.build("../res/floorData/thirdFloor.xml");
-    		
-    		Element root = doc.getRootElement();
-    		Elements ranges = root.getChildElements();
-    		
-    		// TODO Rename last-accessed in XML files to last-checked.
-    		for (int i = 0; i < ranges.size(); i++) {
-    			String tmpX = ranges.get(i).getFirstChildElement("x").getValue();
-    			String tmpY = ranges.get(i).getFirstChildElement("y").getValue();
-    			String tmpBegin = ranges.get(i).getFirstChildElement("begin").getValue();
-    			String tmpEnd = ranges.get(i).getFirstChildElement("end").getValue();
-    			String tmpLastAccessed = ranges.get(i).getFirstChildElement("last-accessed").getValue();
-    			System.out.println("x: " + tmpX + " y: " + tmpY
-    		                     + " Begin: " + tmpBegin + " End: " + tmpEnd 
-    					         + " Last accessed: " + tmpLastAccessed);
-    		}
-    	}
-    	catch (ParsingException e) {
-    		System.err.println("Error parsing XML file.");
-    	}
-    	catch (IOException e) {
-    		System.err.println("IOException: " + e);
-    	}
-
     	fCConstraints = new GridBagConstraints();
     }
 
@@ -181,6 +151,7 @@ public class GUI extends JApplet implements ActionListener, MouseListener {
     	}
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
     	JButton j = (JButton) e.getSource();
     	System.out.println(j.getText());
@@ -195,12 +166,14 @@ public class GUI extends JApplet implements ActionListener, MouseListener {
     	}
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
     	
     }
 
     /** Update the GUI components that display information about the 
      * currently moused-over Range. */
+    @Override
     public void mouseEntered(MouseEvent e) {
     	Range r = (Range) e.getSource();
     	rangeStart.setText(r.getRangeStart());
@@ -209,12 +182,15 @@ public class GUI extends JApplet implements ActionListener, MouseListener {
     }
     
     // TODO Try to find a way of using MouseListener or ActionListener, rather than both.
+    @Override
     public void mouseExited(MouseEvent e) {
     }
     
+    @Override
     public void mousePressed(MouseEvent e) {
     }
     
+    @Override
     public void mouseReleased(MouseEvent e) {
     }
 }
