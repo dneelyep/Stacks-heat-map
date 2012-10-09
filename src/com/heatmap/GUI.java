@@ -15,10 +15,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import nu.xom.Document;
-import nu.xom.Element;
-import nu.xom.Elements;
-
 /** GUI.java - Class that holds the primary GUI for the program.
  *
  * @author Daniel Neel */

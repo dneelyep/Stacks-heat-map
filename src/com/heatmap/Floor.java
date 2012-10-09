@@ -24,85 +24,60 @@ public class Floor {
 
 	/** Create a new Floor using floorNumber to determine layout. */
 	public Floor(int floorNumber) {
-		if (floorNumber == 3) {
-			ranges = new ArrayList<>(163);
-			makeThirdFloor();
-		}
-		else if (floorNumber == 4) {
-			ranges = new ArrayList<>(93);
-			makeFourthFloor();
-		}
-	}
-	
-	/** Create a set of Ranges that represents the third floor of the library. */
-	public void makeThirdFloor() {
-		// TODO There has to be a better way of representing a constant object than 
-		// only allowing it to be initialized once as I'm doing here. Maybe an enumeration?
-		// Or make ranges final, so it can't be overridden later?
-		if (initialized == false) {
-    		try {
-    	    	Document doc = new Builder().build("../res/floorData/thirdFloor.xml");
-    			Element root = doc.getRootElement();
-    			Elements rangeElements = root.getChildElements();
-    			
-    			for (int i = 0; i < rangeElements.size(); i++) {
-    				String tmpX = rangeElements.get(i).getFirstChildElement("x").getValue();
-    				String tmpY = rangeElements.get(i).getFirstChildElement("y").getValue();
-    				ranges.add(new Range(Integer.parseInt(tmpX), Integer.parseInt(tmpY)));
-    				// TODO Also use the following to set other parameters.
-//    				String tmpBegin = ranges.get(i).getFirstChildElement("begin").getValue();
-//    				String tmpEnd = ranges.get(i).getFirstChildElement("end").getValue();
-//    				String tmpLastChecked= ranges.get(i).getFirstChildElement("last-checked").getValue();
-//    				System.out.println("x: " + tmpX + " y: " + tmpY
-//    			                     + " Begin: " + tmpBegin + " End: " + tmpEnd 
-//    						         + " Last checked: " + tmpLastChecked);
-    			}
-    		}
-        	catch (ParsingException e) {
-        		System.err.println("Error parsing this Floor's XML file.");
-        	}
-        	catch (IOException e) {
-        		System.err.println("IOException: " + e);
-        	}
-		}
-
-		initialized = true;
+		makeFloor(floorNumber);
 	}
 
-	// TODO Try to make a more general makeFloor() method.
-    /** Create a set of Ranges that represents the fourth floor of the library. */
-    public void makeFourthFloor() {
-    	if (initialized == false) {
-    		try {
-    	    	Document doc = new Builder().build("../res/floorData/fourthFloor.xml");
-    			Element root = doc.getRootElement();
-    			Elements rangeElements = root.getChildElements();
-    			
-    			for (int i = 0; i < rangeElements.size(); i++) {
-    				String tmpX = rangeElements.get(i).getFirstChildElement("x").getValue();
-    				String tmpY = rangeElements.get(i).getFirstChildElement("y").getValue();
-    				ranges.add(new Range(Integer.parseInt(tmpX), Integer.parseInt(tmpY)));
-    				// TODO Also use the following to set other parameters.
-//    				String tmpBegin = ranges.get(i).getFirstChildElement("begin").getValue();
-//    				String tmpEnd = ranges.get(i).getFirstChildElement("end").getValue();
-//    				String tmpLastChecked= ranges.get(i).getFirstChildElement("last-checked").getValue();
-//    				System.out.println("x: " + tmpX + " y: " + tmpY
-//    			                     + " Begin: " + tmpBegin + " End: " + tmpEnd 
-//    						         + " Last checked: " + tmpLastChecked);
-    			}
-    		}
-        	catch (ParsingException e) {
-        		System.err.println("Error parsing this Floor's XML file.");
-        	}
-        	catch (IOException e) {
-        		System.err.println("IOException: " + e);
-        	}
+	/** Create a set of Ranges that represents a Floor of the library. */
+	public void makeFloor(int floorNumber) {
+		if (floorNumber == 3 || floorNumber == 4) {
+			String floorFilePath = "../res/floorData/";
+			// TODO Is it necessary to initialize ranges to a certain size?
+			if (floorNumber == 3) {
+				floorFilePath += "thirdFloor.xml";
+				ranges = new ArrayList<>(163);
+			}
+			else { 
+				floorFilePath += "fourthFloor.xml";
+				ranges = new ArrayList<>(93);
+			}
+						
+			// TODO There has to be a better way of representing a constant object than 
+			// only allowing it to be initialized once as I'm doing here. Maybe an enumeration?
+			// Or make ranges final, so it can't be overridden later?
+			if (initialized == false) {
+	    		try {
+	    	    	Document doc = new Builder().build(floorFilePath);
+	    			Element root = doc.getRootElement();
+	    			Elements rangeElements = root.getChildElements();
+	    			
+	    			for (int i = 0; i < rangeElements.size(); i++) {
+	    				String tmpX = rangeElements.get(i).getFirstChildElement("x").getValue();
+	    				String tmpY = rangeElements.get(i).getFirstChildElement("y").getValue();
+	    				ranges.add(new Range(Integer.parseInt(tmpX), Integer.parseInt(tmpY)));
+	    				// TODO Also use the following to set other parameters.
+//	    				String tmpBegin = ranges.get(i).getFirstChildElement("begin").getValue();
+//	    				String tmpEnd = ranges.get(i).getFirstChildElement("end").getValue();
+//	    				String tmpLastChecked= ranges.get(i).getFirstChildElement("last-checked").getValue();
+//	    				System.out.println("x: " + tmpX + " y: " + tmpY
+//	    			                     + " Begin: " + tmpBegin + " End: " + tmpEnd 
+//	    						         + " Last checked: " + tmpLastChecked);
+	    			}
+	    		}
+	        	catch (ParsingException e) {
+	        		System.err.println("Error parsing this Floor's XML file.");
+	        	}
+	        	catch (IOException e) {
+	        		System.err.println("IOException: " + e);
+	        	}
+			}
 
-    		// TODO Add in the empty space so the map looks a bit closer to the layout?
-    	}
-    	initialized = true;
-    }
-    
+			initialized = true;
+		}
+		else {
+			System.out.println("Error! Tried to create a Floor that does not exist.");			
+		}
+	}
+
     /** Get an ArrayList of this Floor's Ranges.*/
     public ArrayList<Range> getRanges() {
     	return ranges;
