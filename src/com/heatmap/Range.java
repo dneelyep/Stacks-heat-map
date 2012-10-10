@@ -69,4 +69,9 @@ public class Range extends JLabel {
 			daysSinceLastChecked = -1;
 		}
 	}
+	
+	/** Get how many days since this Range was last checked. */
+	public int getLastChecked() {
+		return daysSinceLastChecked;
+	}
 }

@@ -1,5 +1,7 @@
 package com.heatmap;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -8,7 +10,6 @@ import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Elements;
 import nu.xom.ParsingException;
-import nu.xom.Text;
 
 /** Class to represent a floor in the library. */
 public class Floor {
@@ -23,8 +24,9 @@ public class Floor {
 	 * on this Floor. */
 	private Document floorDataFile;
 	
-	// TODO Create a write() method that will write all pertinent information for
-	// this Floor to its data file, so as to store changes.
+	/** The path to this Floor's data file. */
+	private String floorPath;
+	
 	/** Create a new Floor using floorNumber to determine layout. */
 	public Floor(int floorNumber) {	
 		makeFloor(floorNumber);
@@ -33,14 +35,13 @@ public class Floor {
 	/** Create a set of Ranges that represents a Floor of the library. */
 	public void makeFloor(int floorNumber) {
 		if (floorNumber == 3 || floorNumber == 4) {
-			String floorFilePath = "../res/floorData/";
 			// TODO Is it necessary to initialize ranges to a certain size?
 			if (floorNumber == 3) {
-				floorFilePath += "thirdFloor.xml";
+				floorPath = "../res/floorData/thirdFloor.xml";
 				ranges = new ArrayList<>(163);
 			}
-			else { 
-				floorFilePath += "fourthFloor.xml";
+			else {
+				floorPath = "../res/floorData/fourthFloor.xml";
 				ranges = new ArrayList<>(93);
 			}
 						
@@ -49,8 +50,8 @@ public class Floor {
 			// Or make ranges final, so it can't be overridden later?
 			if (initialized == false) {
 	    		try {
-	    	    	Document doc = new Builder().build(floorFilePath);
-	    			Element root = doc.getRootElement();
+	    	    	floorDataFile = new Builder().build(floorPath);
+	    			Element root = floorDataFile.getRootElement();
 	    			Elements rangeElements = root.getChildElements();
 	    			
 	    			for (int i = 0; i < rangeElements.size(); i++) {
@@ -81,37 +82,40 @@ public class Floor {
 	/** Store the information for every Range on this Floor 
 	 * into this Floor's data file. */
 	public void write() {
-		try {
-			Elements rangeElements = floorDataFile.getRootElement().getChildElements();
+		Element root = floorDataFile.getRootElement();
+		Elements fileRanges = root.getChildElements();
+
+		for (int i = 0; i < fileRanges.size(); i++) {
+			Element rangeEle = fileRanges.get(i);
+			Elements rangeEleEles= rangeEle.getChildElements();
 			
-			for (int i = 0; i < rangeElements.size(); i++) {
-				Element e = rangeElements.get(i);
-// TODO LEFTOFFHERE Currently in the process of implementing write contents to file.
-				e.replaceChild(e.getChild(0), new Text(Integer.toString(ranges.get(i).getXCoord())));
-				
-				String tmpX = e.getFirstChildElement("x").getValue();
-				String tmpY = e.getFirstChildElement("y").getValue();
-				ranges.add(new Range(Integer.parseInt(tmpX), Integer.parseInt(tmpY)));
-				ranges.get(i).setStart(e.getFirstChildElement("begin").getValue());
-				ranges.get(i).setEnd(e.getFirstChildElement("end").getValue());
-				ranges.get(i).setLastChecked(e.getFirstChildElement("last-checked").getValue());
+			// Get rid of current <range> children in the file.
+			for (int j = 0; j < rangeEleEles.size(); j++) {
+				rangeEleEles.get(j).removeChildren();
 			}
+			
+			// Replace each range's attributes in the file with each object's attributes.
+			rangeEleEles.get(0).appendChild("0");//Integer.toString(ranges.get(i).getXCoord()));
+			rangeEleEles.get(1).appendChild("0");//Integer.toString(ranges.get(i).getYCoord()));
+			rangeEleEles.get(2).appendChild("START");//ranges.get(i).getStart());
+			rangeEleEles.get(3).appendChild("END");//ranges.get(i).getEnd());
+			rangeEleEles.get(4).appendChild("0");//Integer.toString(ranges.get(i).getLastChecked()));
 		}
-    	catch (ParsingException e) {
-    		System.err.println("Error parsing this Floor's XML file.");
-    	}
-    	catch (IOException e) {
-    		System.err.println("IOException: " + e);
-    	}
+
+		floorDataFile.setRootElement(root);
 		
-		for (Range r : ranges) {
-			System.out.println("<range>");
-			System.out.println("    <x>" + r.getXCoord() + "</x>");
-			System.out.println("    <y>" + r.getYCoord() + "</y>");
-			System.out.println("    <start>" + r.getStart() + "</start>");
-			System.out.println("    <end>" + r.getEnd() + "</end>");
-			System.out.println("    <last-checked>" + r.getDaysSinceChecked() + "</last-checked>");
-			System.out.println("</range>");
+//	 	TODO Now Range contents are being written to files. Now I need to convert it
+//		to use the actual x/y/start/end/lastchecked values from the objects. 
+//		Then I should be doing much better.
+
+		try {
+		  FileWriter fstream = new FileWriter(floorPath);
+		  BufferedWriter out = new BufferedWriter(fstream);
+		  out.write(floorDataFile.toXML());
+		  out.close();
+		}
+		catch (Exception e) {//Catch exception if any
+		  System.err.println("Error: " + e.getMessage());
 		}
 	}
 

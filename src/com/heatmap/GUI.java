@@ -151,7 +151,8 @@ public class GUI extends JApplet implements ActionListener, MouseListener {
     public void actionPerformed(ActionEvent e) {
     	JButton j = (JButton) e.getSource();
     	System.out.println(j.getText());
-    	
+ 
+    	// TODO Remove dup. text here. Set current floor then use it for the stuff.
     	if (j.getText().equals("3rd floor") && currentFloor != thirdFloor) {
     		displayFloor(thirdFloor);
     		currentFloor = thirdFloor;
