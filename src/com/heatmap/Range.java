@@ -36,12 +36,12 @@ public class Range extends JLabel {
 	}
 	
 	/** Get this Range's starting call number. */
-	public String getRangeStart() {
+	public String getStart() {
 		return startCallNumber;
 	}
 	
 	/** Get this Range's ending call number. */
-	public String getRangeEnd() {
+	public String getEnd() {
 		return endCallNumber;
 	}
 	

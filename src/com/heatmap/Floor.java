@@ -8,6 +8,7 @@ import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Elements;
 import nu.xom.ParsingException;
+import nu.xom.Text;
 
 /** Class to represent a floor in the library. */
 public class Floor {
@@ -21,9 +22,11 @@ public class Floor {
 	/** An XML Document that holds the information for each Range object 
 	 * on this Floor. */
 	private Document floorDataFile;
-
+	
+	// TODO Create a write() method that will write all pertinent information for
+	// this Floor to its data file, so as to store changes.
 	/** Create a new Floor using floorNumber to determine layout. */
-	public Floor(int floorNumber) {
+	public Floor(int floorNumber) {	
 		makeFloor(floorNumber);
 	}
 
@@ -72,6 +75,43 @@ public class Floor {
 		}
 		else {
 			System.out.println("Error! Tried to create a Floor that does not exist.");			
+		}
+	}
+	
+	/** Store the information for every Range on this Floor 
+	 * into this Floor's data file. */
+	public void write() {
+		try {
+			Elements rangeElements = floorDataFile.getRootElement().getChildElements();
+			
+			for (int i = 0; i < rangeElements.size(); i++) {
+				Element e = rangeElements.get(i);
+// TODO LEFTOFFHERE Currently in the process of implementing write contents to file.
+				e.replaceChild(e.getChild(0), new Text(Integer.toString(ranges.get(i).getXCoord())));
+				
+				String tmpX = e.getFirstChildElement("x").getValue();
+				String tmpY = e.getFirstChildElement("y").getValue();
+				ranges.add(new Range(Integer.parseInt(tmpX), Integer.parseInt(tmpY)));
+				ranges.get(i).setStart(e.getFirstChildElement("begin").getValue());
+				ranges.get(i).setEnd(e.getFirstChildElement("end").getValue());
+				ranges.get(i).setLastChecked(e.getFirstChildElement("last-checked").getValue());
+			}
+		}
+    	catch (ParsingException e) {
+    		System.err.println("Error parsing this Floor's XML file.");
+    	}
+    	catch (IOException e) {
+    		System.err.println("IOException: " + e);
+    	}
+		
+		for (Range r : ranges) {
+			System.out.println("<range>");
+			System.out.println("    <x>" + r.getXCoord() + "</x>");
+			System.out.println("    <y>" + r.getYCoord() + "</y>");
+			System.out.println("    <start>" + r.getStart() + "</start>");
+			System.out.println("    <end>" + r.getEnd() + "</end>");
+			System.out.println("    <last-checked>" + r.getDaysSinceChecked() + "</last-checked>");
+			System.out.println("</range>");
 		}
 	}
 

@@ -155,10 +155,12 @@ public class GUI extends JApplet implements ActionListener, MouseListener {
     	if (j.getText().equals("3rd floor") && currentFloor != thirdFloor) {
     		displayFloor(thirdFloor);
     		currentFloor = thirdFloor;
+    		thirdFloor.write();
     	}
     	else if (j.getText().equals("4th floor") && currentFloor != fourthFloor) {
     		displayFloor(fourthFloor);
     		currentFloor = fourthFloor;
+    		fourthFloor.write();
     	}
     }
 
@@ -172,8 +174,8 @@ public class GUI extends JApplet implements ActionListener, MouseListener {
     @Override
     public void mouseEntered(MouseEvent e) {
     	Range r = (Range) e.getSource();
-    	rangeStart.setText(r.getRangeStart());
-    	rangeEnd.setText(r.getRangeEnd());
+    	rangeStart.setText(r.getStart());
+    	rangeEnd.setText(r.getEnd());
     	daysSinceChecked.setText(Integer.toString(r.getDaysSinceChecked()));
     }
     
