@@ -95,18 +95,14 @@ public class Floor {
 			}
 			
 			// Replace each range's attributes in the file with each object's attributes.
-			rangeEleEles.get(0).appendChild("0");//Integer.toString(ranges.get(i).getXCoord()));
-			rangeEleEles.get(1).appendChild("0");//Integer.toString(ranges.get(i).getYCoord()));
-			rangeEleEles.get(2).appendChild("START");//ranges.get(i).getStart());
-			rangeEleEles.get(3).appendChild("END");//ranges.get(i).getEnd());
-			rangeEleEles.get(4).appendChild("0");//Integer.toString(ranges.get(i).getLastChecked()));
+			rangeEleEles.get(0).appendChild(Integer.toString(ranges.get(i).getXCoord()));
+			rangeEleEles.get(1).appendChild(Integer.toString(ranges.get(i).getYCoord()));
+			rangeEleEles.get(2).appendChild(ranges.get(i).getStart());
+			rangeEleEles.get(3).appendChild(ranges.get(i).getEnd());
+			rangeEleEles.get(4).appendChild(Integer.toString(ranges.get(i).getLastChecked()));
 		}
 
 		floorDataFile.setRootElement(root);
-		
-//	 	TODO Now Range contents are being written to files. Now I need to convert it
-//		to use the actual x/y/start/end/lastchecked values from the objects. 
-//		Then I should be doing much better.
 
 		try {
 		  FileWriter fstream = new FileWriter(floorPath);
@@ -114,7 +110,7 @@ public class Floor {
 		  out.write(floorDataFile.toXML());
 		  out.close();
 		}
-		catch (Exception e) {//Catch exception if any
+		catch (Exception e) {
 		  System.err.println("Error: " + e.getMessage());
 		}
 	}
