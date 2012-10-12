@@ -5,6 +5,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.swing.JButton;
+
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;
@@ -27,6 +29,16 @@ public class Floor {
 	/** The path to this Floor's data file. */
 	private String floorPath;
 	
+	/** Button used to display this Floor in the GUI. */
+	private JButton button;
+	
+	// TODO [Maybe] Even more clean would be a class that extends JButton and stores x/y values.
+	/** The x-coordinate of this Floor's button. */
+	private int buttonX;
+	
+	/** The y-coordinate of this Floor's button. */
+	private int buttonY;
+	
 	/** Create a new Floor using floorNumber to determine layout. */
 	public Floor(int floorNumber) {	
 		makeFloor(floorNumber);
@@ -35,14 +47,21 @@ public class Floor {
 	/** Create a set of Ranges that represents a Floor of the library. */
 	public void makeFloor(int floorNumber) {
 		if (floorNumber == 3 || floorNumber == 4) {
-			// TODO Is it necessary to initialize ranges to a certain size?
+			// TODO Rather than initialize ranges to hard-coded values, use the number
+			// of elements in the data file.
 			if (floorNumber == 3) {
 				floorPath = "../res/floorData/thirdFloor.xml";
 				ranges = new ArrayList<>(163);
+				button = new JButton("3rd floor");
+				buttonX = 0;
+				buttonY = 1;
 			}
 			else {
 				floorPath = "../res/floorData/fourthFloor.xml";
 				ranges = new ArrayList<>(93);
+				button = new JButton("4th floor");
+				buttonX = 0;
+				buttonY = 2;
 			}
 						
 			// TODO There has to be a better way of representing a constant object than 
@@ -123,6 +142,21 @@ public class Floor {
     /** Return this Floor's data file. */
     public Document getFloorDataFile() {
     	return floorDataFile;    	
+    }
+    
+    /** Get this Floor's button. */
+    public JButton getButton() {
+    	return button;
+    }
+    
+    /** Get this Floor's button's x-coordinate. */
+    public int getButtonX() {
+    	return buttonX;
+    }
+    
+    /** Get this Floor's button's y-coordinate. */
+    public int getButtonY() {
+    	return buttonY;
     }
 }
 

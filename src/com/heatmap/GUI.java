@@ -20,13 +20,7 @@ import javax.swing.SwingUtilities;
  * @author Daniel Neel */
 public class GUI extends JApplet implements MouseListener {
 	
-	// TODO Should Floors contain a JButton as a field with coordinates, etc?
-	/** Button to allow the user to view the 3rd floor's status. */
-	private JButton thirdFloorButton;
-	
-	/** Button to allow the user to view the 4th floor's status. */
-	private JButton fourthFloorButton;
-
+	// TODO Fix the problem where, when resizing the window, input fields shrink.
 	/** Floor to represent the library's third floor. */
 	private Floor thirdFloor;
 	
@@ -111,18 +105,16 @@ public class GUI extends JApplet implements MouseListener {
     	g.gridy = 0;
     	add(new JLabel("Stacks Cleanliness Heat Map"), g);
     	
-    	thirdFloorButton = new JButton("3rd floor");
-    	fourthFloorButton = new JButton("4th floor");
-    	thirdFloorButton.addMouseListener(this);
-    	fourthFloorButton.addMouseListener(this);
+    	thirdFloor.getButton().addMouseListener(this);
+    	fourthFloor.getButton().addMouseListener(this);
     	
-    	g.gridx = 0;
-    	g.gridy = 1;
-    	add(thirdFloorButton, g);
+    	g.gridx = thirdFloor.getButtonX();
+    	g.gridy = thirdFloor.getButtonY();
+    	add(thirdFloor.getButton(), g);
     	
-    	g.gridx = 0;
-    	g.gridy = 2;
-    	add(fourthFloorButton, g);
+    	g.gridx = fourthFloor.getButtonX();
+    	g.gridy = fourthFloor.getButtonY();
+    	add(fourthFloor.getButton(), g);
 
     	g.gridx = 1;
     	g.gridy = 1;
@@ -177,12 +169,10 @@ public class GUI extends JApplet implements MouseListener {
     	submitData.setEnabled(false);
     	add(submitData, g);
     	
-    	// TODO Grey out cancel when it's not possible to cancel.
     	g.gridx = 6;
     	g.gridy = 0;
     	cancel = new JButton("Cancel");
     	cancel.addMouseListener(this);
-    	cancel.setEnabled(false);
     	add(cancel, g);
     	
     	allowInput(false);
@@ -228,21 +218,20 @@ public class GUI extends JApplet implements MouseListener {
     	newDaysSinceChecked.setText("");
     }
     
-    /** Allow or disallow input on the GUI. */
+    /** Allow or disallow the user to edit the properties 
+     * of a clicked-on Range. */
     public void allowInput(Boolean b) {
     	newRangeStart.setEnabled(b);
     	newRangeEnd.setEnabled(b);
     	newDaysSinceChecked.setEnabled(b);
     	submitData.setEnabled(b);
-    	// TODO Add cancel.setEnabled(b) here? 
+    	cancel.setEnabled(b);
     }
 
     /** Allow the user to change the clicked on Range on the viewed Floor's properties. */
     @Override
     public void mouseClicked(MouseEvent e) {
-//    	 TODO Set a minimum width on the JLabels that show current range values so the UI doesn't jump around on Range mouseover.
-//    	 TODO Disable the current floor's button when viewing that floor.
-
+    	// TODO Set a minimum width on the JLabels that show current range values so the UI doesn't jump around on Range mouseover.
     	// Select the clicked-on Range for editing.
     	if (e.getComponent() instanceof Range) {
 	    	Range r = (Range) e.getSource();
@@ -252,13 +241,11 @@ public class GUI extends JApplet implements MouseListener {
 	    	clickedRangeEnd.setText("End (" + r.getXCoord() + "," + r.getYCoord() + "):");
 	    	currentRangeEnd.setText(r.getEnd());
 	    	currentDaysSinceChecked.setText(Integer.toString(r.getDaysSinceChecked()));
-	    	cancel.setEnabled(true);
 	    	rangeClicked = true;
 	    	allowInput(true);
     	}
     	
     	// Change the values of a Range's properties depending on user input.
-    	// TODO Make this an if is instanceof JButton?
     	else if (e.getComponent() instanceof JButton) {
     		JButton button = (JButton) e.getComponent();
 
@@ -277,25 +264,24 @@ public class GUI extends JApplet implements MouseListener {
     		}
     		else if (button == cancel) {
     			System.out.println("Cancel!");
-    			button.setEnabled(false);
     			allowInput(false);
     		}
 
-    		else if (button == thirdFloorButton || button == fourthFloorButton) {
+    		else if (button == thirdFloor.getButton()|| button == fourthFloor.getButton()) {
         		// TODO Would radio buttons or an equivalent be more natural to use than buttons
         		//      for floor switching?
     			// TODO Do I need this currentFloor != check? In this case, other Floor
     			//      buttons should be greyed out.
     			// TODO Condense these conditions.
-        		if (button == thirdFloorButton && currentFloor != thirdFloor) {
+        		if (button == thirdFloor.getButton() && currentFloor != thirdFloor) {
         			currentFloor = thirdFloor;
-        			thirdFloorButton.setEnabled(false);
-        			fourthFloorButton.setEnabled(true);
+        			thirdFloor.getButton().setEnabled(false);
+        			fourthFloor.getButton().setEnabled(true);
         		}
-        		else if (button == fourthFloorButton && currentFloor != fourthFloor) {
+        		else if (button == fourthFloor.getButton() && currentFloor != fourthFloor) {
         			currentFloor = fourthFloor;
-        			fourthFloorButton.setEnabled(false);
-        			thirdFloorButton.setEnabled(true);
+        			fourthFloor.getButton().setEnabled(false);
+        			thirdFloor.getButton().setEnabled(true);
         		}
 
         		displayFloor(currentFloor);
@@ -324,7 +310,6 @@ public class GUI extends JApplet implements MouseListener {
     	}
     }
     
-    // TODO Try to find a way of using MouseListener or ActionListener, rather than both.
     @Override
     public void mouseExited(MouseEvent e) {
     }
