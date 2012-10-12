@@ -5,8 +5,6 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -20,8 +18,9 @@ import javax.swing.SwingUtilities;
 /** GUI.java - Class that holds the primary GUI for the program.
  *
  * @author Daniel Neel */
-public class GUI extends JApplet implements ActionListener, MouseListener {
+public class GUI extends JApplet implements MouseListener {
 	
+	// TODO Should Floors contain a JButton as a field with coordinates, etc?
 	/** Button to allow the user to view the 3rd floor's status. */
 	private JButton thirdFloorButton;
 	
@@ -114,8 +113,8 @@ public class GUI extends JApplet implements ActionListener, MouseListener {
     	
     	thirdFloorButton = new JButton("3rd floor");
     	fourthFloorButton = new JButton("4th floor");
-    	thirdFloorButton.addActionListener(this);
-    	fourthFloorButton.addActionListener(this);
+    	thirdFloorButton.addMouseListener(this);
+    	fourthFloorButton.addMouseListener(this);
     	
     	g.gridx = 0;
     	g.gridy = 1;
@@ -238,32 +237,14 @@ public class GUI extends JApplet implements ActionListener, MouseListener {
     	// TODO Add cancel.setEnabled(b) here? 
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-    	JButton j = (JButton) e.getSource();
-
-    	if (j.getText().equals("3rd floor") || j.getText().equals("4th floor")) {
-
-    		if (j.getText().equals("3rd floor") && currentFloor != thirdFloor) {
-    			currentFloor = thirdFloor;
-    		}
-    		else if (j.getText().equals("4th floor") && currentFloor != fourthFloor) {
-    			currentFloor = fourthFloor;
-    		}
-    		
-    		displayFloor(currentFloor);
-    		currentFloor.write();
-    	}
-    }
-
     /** Allow the user to change the clicked on Range on the viewed Floor's properties. */
     @Override
     public void mouseClicked(MouseEvent e) {
-    	// TODO Clear the contents of rangeStart, rangeEnd, and daysSinceChecked when floor view is switched.
-    	// TODO Set a minimum width on the JLabels that show current range values so the UI doesn't jump around on Range mouseover.
-    	
+//    	 TODO Set a minimum width on the JLabels that show current range values so the UI doesn't jump around on Range mouseover.
+//    	 TODO Disable the current floor's button when viewing that floor.
+
     	// Select the clicked-on Range for editing.
-    	if (e.getComponent() instanceof com.heatmap.Range) {
+    	if (e.getComponent() instanceof Range) {
 	    	Range r = (Range) e.getSource();
 	    	clickedRange = r;
 	    	clickedRangeStart.setText("Start (" + r.getXCoord() + "," + r.getYCoord() + "):");
@@ -277,11 +258,13 @@ public class GUI extends JApplet implements ActionListener, MouseListener {
     	}
     	
     	// Change the values of a Range's properties depending on user input.
-    	else {
+    	// TODO Make this an if is instanceof JButton?
+    	else if (e.getComponent() instanceof JButton) {
     		JButton button = (JButton) e.getComponent();
 
     		if (button == submitData) {
     			
+    			// TODO Find a cleaner way of checking whether the textfield's text has been edited.
     			if (newRangeStart.getText().equals("") == false) {
     				clickedRange.setStart(newRangeStart.getText());
     			}
@@ -298,6 +281,27 @@ public class GUI extends JApplet implements ActionListener, MouseListener {
     			allowInput(false);
     		}
 
+    		else if (button == thirdFloorButton || button == fourthFloorButton) {
+        		// TODO Would radio buttons or an equivalent be more natural to use than buttons
+        		//      for floor switching?
+    			// TODO Do I need this currentFloor != check? In this case, other Floor
+    			//      buttons should be greyed out.
+    			// TODO Condense these conditions.
+        		if (button == thirdFloorButton && currentFloor != thirdFloor) {
+        			currentFloor = thirdFloor;
+        			thirdFloorButton.setEnabled(false);
+        			fourthFloorButton.setEnabled(true);
+        		}
+        		else if (button == fourthFloorButton && currentFloor != fourthFloor) {
+        			currentFloor = fourthFloor;
+        			fourthFloorButton.setEnabled(false);
+        			thirdFloorButton.setEnabled(true);
+        		}
+
+        		displayFloor(currentFloor);
+        		currentFloor.write();
+        	}
+
     		clearInput();
     		rangeClicked = false;
     		clickedRange = null;
@@ -310,7 +314,7 @@ public class GUI extends JApplet implements ActionListener, MouseListener {
      * currently moused-over Range. */
     @Override
     public void mouseEntered(MouseEvent e) {
-    	if (rangeClicked == false && e.getComponent() instanceof com.heatmap.Range) { 
+    	if (rangeClicked == false && e.getComponent() instanceof Range) { 
    			Range r = (Range) e.getSource();
    			clickedRangeStart.setText("Start (" + r.getXCoord() + "," + r.getYCoord() + "):");
    			currentRangeStart.setText(r.getStart());
