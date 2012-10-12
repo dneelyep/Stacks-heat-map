@@ -3,9 +3,9 @@
     <range>
         <x>1</x>
         <y>14</y>
-        <begin></begin>
-        <end></end>
-        <last-checked>-1</last-checked>
+        <begin>P110</begin>
+        <end>PA450</end>
+        <last-checked>30</last-checked>
     </range>
     <range>
         <x>1</x>
