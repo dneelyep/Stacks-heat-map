@@ -1,5 +1,7 @@
 package com.heatmap;
 
+import java.util.Date;
+
 import javax.swing.JLabel;
 
 /** Class to represent a single range of books in the library. */
@@ -9,9 +11,9 @@ public class Range extends JLabel {
 	
 	/** The last call number in this Range. */
 	private String endCallNumber;
-	
-	/** The number of days since this range has last had a pickup done on it. */
-	private int daysSinceLastChecked;
+
+	/** The day this Range was last checked for cleanliness. */
+	private Date dayLastChecked;
 	
 	/** This Range's x-coordinate in the GUI. */
 	private final int XCOORD;
@@ -45,11 +47,6 @@ public class Range extends JLabel {
 		return endCallNumber;
 	}
 	
-	/** Get the number of days since this Range was last checked. */
-	public int getDaysSinceChecked() {
-		return daysSinceLastChecked;
-	}
-	
 	/** Set this Range's start call number to a new value start. */
 	public void setStart(String start) {
 		startCallNumber = start;
@@ -59,19 +56,14 @@ public class Range extends JLabel {
 	public void setEnd(String end) {
 		endCallNumber = end;
 	}
-	
-	/** Set this Range's last checked date to a new value newLastChecked. */
-	public void setLastChecked(String newLastChecked) {
-		if (newLastChecked.isEmpty() == false) {
-			daysSinceLastChecked = Integer.parseInt(newLastChecked);
-		}
-		else {
-			daysSinceLastChecked = -1;
-		}
+
+	/** Set the Date this range was last checked to a new Date d. */
+	public void setDayLastChecked(Date d) {
+		dayLastChecked = d;
 	}
-	
-	/** Get how many days since this Range was last checked. */
-	public int getLastChecked() {
-		return daysSinceLastChecked;
+
+	/** Get the Date that this Range was last checked for cleanliness. */
+	public Date getDayLastChecked() {
+		return dayLastChecked;
 	}
 }

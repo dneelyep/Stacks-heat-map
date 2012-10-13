@@ -3,6 +3,8 @@ package com.heatmap;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
@@ -47,26 +49,26 @@ public class Floor {
 	/** Create a set of Ranges that represents a Floor of the library. */
 	public void makeFloor(int floorNumber) {
 		if (floorNumber == 3 || floorNumber == 4) {
-			// TODO Rather than initialize ranges to hard-coded values, use the number
+			// TODO Rather than initialize ranges size to hard-coded values, use the number
 			// of elements in the data file.
 			if (floorNumber == 3) {
 				floorPath = "../res/floorData/thirdFloor.xml";
 				ranges = new ArrayList<>(163);
 				button = new JButton("3rd floor");
-				buttonX = 0;
 				buttonY = 1;
 			}
 			else {
 				floorPath = "../res/floorData/fourthFloor.xml";
 				ranges = new ArrayList<>(93);
 				button = new JButton("4th floor");
-				buttonX = 0;
 				buttonY = 2;
 			}
+			
+			buttonX = 0;
 						
 			// TODO There has to be a better way of representing a constant object than 
 			// only allowing it to be initialized once as I'm doing here. Maybe an enumeration?
-			// Or make ranges final, so it can't be overridden later?
+			// Or make ranges final, so it can't be overridden later? Or make this object final?
 			if (initialized == false) {
 	    		try {
 	    	    	floorDataFile = new Builder().build(floorPath);
@@ -80,7 +82,14 @@ public class Floor {
 	    				ranges.add(new Range(Integer.parseInt(tmpX), Integer.parseInt(tmpY)));
 	    				ranges.get(i).setStart(e.getFirstChildElement("begin").getValue());
 	    				ranges.get(i).setEnd(e.getFirstChildElement("end").getValue());
-	    				ranges.get(i).setLastChecked(e.getFirstChildElement("last-checked").getValue());
+	    				
+	    				try {
+	    					DateFormat formatter = DateFormat.getDateInstance();
+	    					ranges.get(i).setDayLastChecked(formatter.parse(e.getFirstChildElement("last-checked").getValue()));
+	    				}
+	    				catch (ParseException p) {
+	    					System.out.println("Error parsing Date:" + p);
+	    				}
 	    			}
 	    		}
 	        	catch (ParsingException e) {
@@ -118,7 +127,10 @@ public class Floor {
 			rangeEleEles.get(1).appendChild(Integer.toString(ranges.get(i).getYCoord()));
 			rangeEleEles.get(2).appendChild(ranges.get(i).getStart());
 			rangeEleEles.get(3).appendChild(ranges.get(i).getEnd());
-			rangeEleEles.get(4).appendChild(Integer.toString(ranges.get(i).getLastChecked()));
+			
+			// TODO Make formatter a field?
+			DateFormat formatter = DateFormat.getDateInstance();
+			rangeEleEles.get(4).appendChild(formatter.format(ranges.get(i).getDayLastChecked()));
 		}
 
 		floorDataFile.setRootElement(root);

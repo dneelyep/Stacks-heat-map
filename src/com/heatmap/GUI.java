@@ -7,6 +7,8 @@ import java.awt.GridBagLayout;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.Calendar;
+import java.util.Date;
 
 import javax.swing.JApplet;
 import javax.swing.JButton;
@@ -15,6 +17,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+
+import org.joda.time.DateTime;
+import org.joda.time.Days;
 
 /** GUI.java - Class that holds the primary GUI for the program.
  *
@@ -59,7 +64,7 @@ public class GUI extends JApplet implements MouseListener {
 	private JLabel currentRangeEnd = new JLabel("<end>");
 	
 	/** Label to display the clicked-on Range's days since it was checked. */
-	private JLabel currentDaysSinceChecked = new JLabel("<days>");
+	private JLabel currentDayLastChecked = new JLabel("<days>");
 
 	/** Button to change attributes of the currently clicked Range. */
 	private JButton submitData = new JButton("Submit");
@@ -71,8 +76,8 @@ public class GUI extends JApplet implements MouseListener {
 	private Floor currentFloor = null;
 	
 	/** Whether or not a Range has been clicked, to lock editing. */
-	private Boolean rangeClicked = false;
-	
+	private Boolean focused = false;
+
 	/** Button to cancel editing of a Range's information. */
 	private JButton cancel = new JButton("Cancel");
 
@@ -122,7 +127,7 @@ public class GUI extends JApplet implements MouseListener {
     	addAt(newRangeStart, 4, 0, g);
     	addAt(currentRangeEnd, 3, 1, g);
     	addAt(newRangeEnd, 4, 1, g);
-    	addAt(currentDaysSinceChecked, 3, 2, g);
+    	addAt(currentDayLastChecked, 3, 2, g);
     	// TODO Add a max number of columns on days since checked input.
     	addAt(newDaysSinceChecked, 4, 2, g);
     	
@@ -151,11 +156,18 @@ public class GUI extends JApplet implements MouseListener {
     			fCConstraints.gridx = r.getXCoord();
     			fCConstraints.gridy = r.getYCoord();
     			r.addMouseListener(this);
-    			
-    			if (r.getDaysSinceChecked() < 15) {
+
+    			// TODO Clean up this code. Implemented it sloppily, make sure it makes sense.
+    			Calendar c = Calendar.getInstance();
+    			c.set(2012, 9, 9);
+    			Date today = c.getTime();
+    			int daysSinceChecked = Days.daysBetween(new DateTime(today), new DateTime(r.getDayLastChecked())).getDays();
+    			System.out.println("Days: " + Integer.toString(daysSinceChecked));
+
+    			if (daysSinceChecked < 15) {
     				r.setForeground(Color.GREEN);
     			}
-    			else if (r.getDaysSinceChecked() >= 15 && r.getDaysSinceChecked() < 30) {
+    			else if (daysSinceChecked >= 15 && daysSinceChecked < 30) {
     				r.setForeground(Color.YELLOW);
     			}
     			else {
@@ -198,8 +210,10 @@ public class GUI extends JApplet implements MouseListener {
 	    	currentRangeStart.setText(r.getStart());
 	    	clickedRangeEnd.setText("End (" + r.getXCoord() + "," + r.getYCoord() + "):");
 	    	currentRangeEnd.setText(r.getEnd());
-	    	currentDaysSinceChecked.setText(Integer.toString(r.getDaysSinceChecked()));
-	    	rangeClicked = true;
+	    	
+	    	currentDayLastChecked.setText(r.getDayLastChecked().toString());
+
+	    	focused = true;
 	    	allowInput(true);
     	}
     	
@@ -215,9 +229,10 @@ public class GUI extends JApplet implements MouseListener {
     			if (newRangeEnd.getText().equals("") == false) {
     				clickedRange.setEnd(newRangeEnd.getText());
     			}
-    			if (newDaysSinceChecked.getText().equals("") == false) {
-    				clickedRange.setLastChecked(newDaysSinceChecked.getText());
-    			}
+    			// TODO Re-implement this. Include a calendar widget?
+//    			if (newDaysSinceChecked.getText().equals("") == false) {
+//    				clickedRange.setLastChecked(newDaysSinceChecked.getText());
+//    			}
     		}
     		else if (button == cancel) {
     			System.out.println("Cancel!");
@@ -242,7 +257,7 @@ public class GUI extends JApplet implements MouseListener {
         	}
 
     		clearInput();
-    		rangeClicked = false;
+    		focused = false;
     		clickedRange = null;
     		displayFloor(currentFloor);
     		currentFloor.write();
@@ -260,13 +275,20 @@ public class GUI extends JApplet implements MouseListener {
      * currently moused-over Range. */
     @Override
     public void mouseEntered(MouseEvent e) {
-    	if (rangeClicked == false && e.getComponent() instanceof Range) { 
+    	if (focused == false && e.getComponent() instanceof Range) { 
    			Range r = (Range) e.getSource();
    			clickedRangeStart.setText("Start (" + r.getXCoord() + "," + r.getYCoord() + "):");
    			currentRangeStart.setText(r.getStart());
    			clickedRangeEnd.setText("End (" + r.getXCoord() + "," + r.getYCoord() + "):");
    			currentRangeEnd.setText(r.getEnd());
-   			currentDaysSinceChecked.setText(Integer.toString(r.getDaysSinceChecked()));
+//   			currentDaysSinceChecked.setText(Integer.toString(r.getDaysSinceChecked()));
+   			// TODO Remove this duplication. This is done previously.
+			Calendar c = Calendar.getInstance();
+			c.set(2012, 9, 9);
+			Date today = c.getTime();
+   			int daysSinceChecked = Days.daysBetween(new DateTime(today), new DateTime(r.getDayLastChecked())).getDays();
+   			currentDayLastChecked.setText(daysSinceChecked + " days ago.");
+			
     	}
     }
     
