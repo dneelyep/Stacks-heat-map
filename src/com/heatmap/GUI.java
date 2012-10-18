@@ -1,13 +1,12 @@
 package com.heatmap;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.Calendar;
 import java.util.Date;
 
 import javax.swing.JApplet;
@@ -18,15 +17,12 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import org.joda.time.DateTime;
-import org.joda.time.Days;
+import org.jdesktop.swingx.JXDatePicker;
 
 /** GUI.java - Class that holds the primary GUI for the program.
  *
  * @author Daniel Neel */
 public class GUI extends JApplet implements MouseListener {
-	
-	// TODO Fix the problem where, when resizing the window, input fields shrink.
 	/** Floor that represents the library's third floor. */
 	private Floor thirdFloor;
 	
@@ -55,7 +51,8 @@ public class GUI extends JApplet implements MouseListener {
 	 * moused-over Range has been checked. */
 	// TODO Use input verification on the text fields to ensure values are appropriate.
 	//      See http://docs.oracle.com/javase/tutorial/uiswing/misc/focus.html#inputVerification
-	private JTextField newDaysSinceChecked = new JTextField("", 3);
+	// TODO Add some checking to make sure the user can't add dates from the future.
+	private JXDatePicker newDaysSinceChecked = new JXDatePicker(new Date());
 	
 	/** Label to display the clicked-on Range's starting call #. */
 	private JLabel currentRangeStart = new JLabel("<start>");
@@ -102,6 +99,8 @@ public class GUI extends JApplet implements MouseListener {
     	setSize((int) screenSize.getWidth(), (int) screenSize.getHeight());
     	setLayout(new GridBagLayout());
     	GridBagConstraints g = new GridBagConstraints();
+    	g.anchor = GridBagConstraints.NORTHWEST;
+    	g.weightx = 0.3;
     	
     	// Initialize the Floors.
     	thirdFloor = new Floor(3);
@@ -115,28 +114,35 @@ public class GUI extends JApplet implements MouseListener {
     	addAt(thirdFloor.getButton(), thirdFloor.getButtonX(), thirdFloor.getButtonY(), g);
     	addAt(fourthFloor.getButton(), fourthFloor.getButtonX(), fourthFloor.getButtonY(), g);
 
-    	// TODO Maybe add a parameter Boolean listen to addAt(), that determines if we want to add
-    	//      a MouseListener to the component or not.
     	floorComponents = new JPanel();
+    	g.gridheight = 3;
     	floorComponents.setLayout(new GridBagLayout());
+    	g.weighty = 1;
     	addAt(floorComponents, 1, 1, g);
+    	
+    	g.weighty = 0;
+    	g.gridheight = 1;
     	addAt(clickedRangeStart, 2, 0, g);
     	addAt(clickedRangeEnd, 2, 1, g);
-    	addAt(new JLabel("Days since checked:"), 2, 2, g);
+    	addAt(new JLabel("Day last checked: "), 2, 2, g);
     	addAt(currentRangeStart, 3, 0, g);
+    	// TODO Fix the problem where, when resizing the window, input fields shrink.
+    	// TODO Look up more about minimum sizes, see if it's possible 
+    	// to make a component non-resizable.
+    	newRangeStart.setMinimumSize(new Dimension(100, 20));
     	addAt(newRangeStart, 4, 0, g);
     	addAt(currentRangeEnd, 3, 1, g);
+    	newRangeEnd.setMinimumSize(new Dimension(100, 20));
     	addAt(newRangeEnd, 4, 1, g);
     	addAt(currentDayLastChecked, 3, 2, g);
-    	// TODO Add a max number of columns on days since checked input.
     	addAt(newDaysSinceChecked, 4, 2, g);
+
+    	cancel.addMouseListener(this);
+    	addAt(cancel, 6, 0, g);
     	
     	submitData.addMouseListener(this);
     	submitData.setEnabled(false);
-    	addAt(submitData, 5, 2, g);
-    	
-    	cancel.addMouseListener(this);
-    	addAt(cancel, 6, 0, g);
+    	addAt(submitData, 6, 1, g);
     	
     	allowInput(false);
     	fCConstraints = new GridBagConstraints();
@@ -151,29 +157,14 @@ public class GUI extends JApplet implements MouseListener {
     		floorComponents.removeAll();
     		clearInput();
     		allowInput(false);
+    		fCConstraints.insets = new Insets(0, 2, 0, 2);
 
     		for (Range r : f.getRanges()) {
     			fCConstraints.gridx = r.getXCoord();
     			fCConstraints.gridy = r.getYCoord();
     			r.addMouseListener(this);
-
-    			// TODO Clean up this code. Implemented it sloppily, make sure it makes sense.
-    			Calendar c = Calendar.getInstance();
-    			c.set(2012, 9, 9);
-    			Date today = c.getTime();
-    			int daysSinceChecked = Days.daysBetween(new DateTime(today), new DateTime(r.getDayLastChecked())).getDays();
-    			System.out.println("Days: " + Integer.toString(daysSinceChecked));
-
-    			if (daysSinceChecked < 15) {
-    				r.setForeground(Color.GREEN);
-    			}
-    			else if (daysSinceChecked >= 15 && daysSinceChecked < 30) {
-    				r.setForeground(Color.YELLOW);
-    			}
-    			else {
-    				r.setForeground(Color.RED);
-    			}
-    			
+    			// TODO Do I need to update the color when I add the component?
+    			r.updateColor();
     			floorComponents.add(r, fCConstraints);
     		}
     		
@@ -185,7 +176,7 @@ public class GUI extends JApplet implements MouseListener {
     public void clearInput() {
     	newRangeStart.setText("");
     	newRangeEnd.setText("");
-    	newDaysSinceChecked.setText("");
+    	newDaysSinceChecked.setDate(new Date());
     }
     
     /** Allow or disallow the user to edit the properties 
@@ -201,7 +192,6 @@ public class GUI extends JApplet implements MouseListener {
     /** Allow the user to change the clicked on Range on the viewed Floor's properties. */
     @Override
     public void mouseClicked(MouseEvent e) {
-    	// TODO Set a minimum width on the JLabels that show current range values so the UI doesn't jump around on Range mouseover.
     	// Select the clicked-on Range for editing.
     	if (e.getComponent() instanceof Range) {
 	    	Range r = (Range) e.getSource();
@@ -210,9 +200,7 @@ public class GUI extends JApplet implements MouseListener {
 	    	currentRangeStart.setText(r.getStart());
 	    	clickedRangeEnd.setText("End (" + r.getXCoord() + "," + r.getYCoord() + "):");
 	    	currentRangeEnd.setText(r.getEnd());
-	    	
-	    	currentDayLastChecked.setText(r.getDayLastChecked().toString());
-
+	    	clickedRange.updateColor();
 	    	focused = true;
 	    	allowInput(true);
     	}
@@ -222,39 +210,36 @@ public class GUI extends JApplet implements MouseListener {
     		JButton button = (JButton) e.getComponent();
 
     		if (button == submitData) {
-    			// TODO Find a cleaner way of checking whether the textfield's text has been edited.
-    			if (newRangeStart.getText().equals("") == false) {
+    			if (newRangeStart.getText().isEmpty() == false) {
     				clickedRange.setStart(newRangeStart.getText());
     			}
-    			if (newRangeEnd.getText().equals("") == false) {
+    			if (newRangeEnd.getText().isEmpty() == false) {
     				clickedRange.setEnd(newRangeEnd.getText());
     			}
-    			// TODO Re-implement this. Include a calendar widget?
-//    			if (newDaysSinceChecked.getText().equals("") == false) {
-//    				clickedRange.setLastChecked(newDaysSinceChecked.getText());
-//    			}
+    			
+    			clickedRange.setDayLastChecked(newDaysSinceChecked.getDate());
+    			clickedRange.updateColor();
     		}
     		else if (button == cancel) {
     			System.out.println("Cancel!");
     			allowInput(false);
     		}
 
-    		else if (button == thirdFloor.getButton()|| button == fourthFloor.getButton()) {
-        		// TODO Would radio buttons or an equivalent be more natural to use than buttons
-        		//      for floor switching?
-    			// TODO Do I need this currentFloor != check? In this case, other Floor
-    			//      buttons should be greyed out.
-    			// TODO Condense these conditions more if possible.
-        		if (button == thirdFloor.getButton() && currentFloor != thirdFloor) {
-        			currentFloor = thirdFloor;
-        			fourthFloor.getButton().setEnabled(true);
-        		}
-        		else if (button == fourthFloor.getButton() && currentFloor != fourthFloor) {
-        			currentFloor = fourthFloor;
-        			thirdFloor.getButton().setEnabled(true);
-        		}
-        		currentFloor.getButton().setEnabled(false);
-        	}
+    		// TODO Would radio buttons or an equivalent be more natural to use than buttons
+    		//      for floor switching?
+			// TODO Do I need this currentFloor != check? In this case, other Floor
+			//      buttons should be greyed out.
+    		else if (button == thirdFloor.getButton() && currentFloor != thirdFloor) {
+    		    currentFloor = thirdFloor;
+    		    fourthFloor.getButton().setEnabled(true);
+    		    currentFloor.getButton().setEnabled(false);
+    		}
+
+    		else if (button == fourthFloor.getButton() && currentFloor != fourthFloor) {
+    		    currentFloor = fourthFloor;
+    		    thirdFloor.getButton().setEnabled(true);
+    		    currentFloor.getButton().setEnabled(false);
+    		}
 
     		clearInput();
     		focused = false;
@@ -281,14 +266,8 @@ public class GUI extends JApplet implements MouseListener {
    			currentRangeStart.setText(r.getStart());
    			clickedRangeEnd.setText("End (" + r.getXCoord() + "," + r.getYCoord() + "):");
    			currentRangeEnd.setText(r.getEnd());
-//   			currentDaysSinceChecked.setText(Integer.toString(r.getDaysSinceChecked()));
-   			// TODO Remove this duplication. This is done previously.
-			Calendar c = Calendar.getInstance();
-			c.set(2012, 9, 9);
-			Date today = c.getTime();
-   			int daysSinceChecked = Days.daysBetween(new DateTime(today), new DateTime(r.getDayLastChecked())).getDays();
-   			currentDayLastChecked.setText(daysSinceChecked + " days ago.");
-			
+   			// TODO Have this printed out on the label prettily - remove the irrelevant info.
+   			currentDayLastChecked.setText(r.getDayLastChecked().toLocaleString() + " (" + Integer.toString(r.getDaysSinceChecked()) + ")");
     	}
     }
     

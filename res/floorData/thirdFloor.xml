@@ -201,7 +201,7 @@
     <y>6</y>
     <begin></begin>
     <end></end>
-    <last-checked>Oct 13, 2012</last-checked>
+    <last-checked>Aug 3, 2012</last-checked>
   </range>
   <range>
     <x>2</x>
@@ -306,7 +306,7 @@
     <y>22</y>
     <begin></begin>
     <end></end>
-    <last-checked>Oct 13, 2012</last-checked>
+    <last-checked>Sep 4, 2012</last-checked>
   </range>
   <range>
     <x>2</x>
@@ -439,7 +439,7 @@
     <y>6</y>
     <begin></begin>
     <end></end>
-    <last-checked>Oct 13, 2012</last-checked>
+    <last-checked>Oct 1, 2012</last-checked>
   </range>
   <range>
     <x>5</x>
@@ -752,7 +752,7 @@
   <range>
     <x>6</x>
     <y>21</y>
-    <begin></begin>
+    <begin>aoeux</begin>
     <end></end>
     <last-checked>Oct 13, 2012</last-checked>
   </range>
@@ -892,8 +892,8 @@
   <range>
     <x>7</x>
     <y>2</y>
-    <begin></begin>
-    <end></end>
+    <begin>HG1000</begin>
+    <end>HG2500</end>
     <last-checked>Oct 13, 2012</last-checked>
   </range>
   <range>
@@ -1090,7 +1090,7 @@
     <y>32</y>
     <begin></begin>
     <end></end>
-    <last-checked>Oct 13, 2012</last-checked>
+    <last-checked>Dec 20, 2012</last-checked>
   </range>
   <range>
     <x>7</x>
@@ -1118,7 +1118,7 @@
     <y>36</y>
     <begin></begin>
     <end></end>
-    <last-checked>Oct 13, 2012</last-checked>
+    <last-checked>Oct 30, 2012</last-checked>
   </range>
   <range>
     <x>7</x>

@@ -6,5 +6,6 @@
 	<classpathentry kind="lib" path="C:/Users/Daniel/Documents/joda-time-2.1-dist/joda-time-2.1/joda-time-2.1.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Daniel/Documents/joda-time-2.1-dist/joda-time-2.1/joda-time-2.1-javadoc.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Daniel/Documents/joda-time-2.1-dist/joda-time-2.1/joda-time-2.1-sources.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Daniel/Downloads/swingx-all-1.6.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

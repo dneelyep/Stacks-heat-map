@@ -49,17 +49,14 @@ public class Floor {
 	/** Create a set of Ranges that represents a Floor of the library. */
 	public void makeFloor(int floorNumber) {
 		if (floorNumber == 3 || floorNumber == 4) {
-			// TODO Rather than initialize ranges size to hard-coded values, use the number
-			// of elements in the data file.
+
 			if (floorNumber == 3) {
 				floorPath = "../res/floorData/thirdFloor.xml";
-				ranges = new ArrayList<>(163);
 				button = new JButton("3rd floor");
 				buttonY = 1;
 			}
 			else {
 				floorPath = "../res/floorData/fourthFloor.xml";
-				ranges = new ArrayList<>(93);
 				button = new JButton("4th floor");
 				buttonY = 2;
 			}
@@ -74,6 +71,10 @@ public class Floor {
 	    	    	floorDataFile = new Builder().build(floorPath);
 	    			Element root = floorDataFile.getRootElement();
 	    			Elements rangeElements = root.getChildElements();
+	    			
+	    			// Make an array of Ranges, that's as large as the number of 
+	    			// Ranges stored in the data file.
+	    			ranges = new ArrayList<>(rangeElements.size());
 	    			
 	    			for (int i = 0; i < rangeElements.size(); i++) {
 	    				Element e = rangeElements.get(i);

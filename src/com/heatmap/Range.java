@@ -1,8 +1,13 @@
 package com.heatmap;
 
+import java.awt.Color;
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.swing.JLabel;
+
+import org.joda.time.DateTime;
+import org.joda.time.Days;
 
 /** Class to represent a single range of books in the library. */
 public class Range extends JLabel {
@@ -21,6 +26,10 @@ public class Range extends JLabel {
 	/** This Range's y-coordinate in the GUI. */
 	private final int YCOORD;
 	
+	/** The color of this Range's text in the GUI. */
+	private Color textColor;
+	
+	/** Create a new Range with the given x-coordinate x and y-coordinate y. */
 	public Range(int x, int y) {
 		XCOORD = x;
 		YCOORD = y;
@@ -63,7 +72,37 @@ public class Range extends JLabel {
 	}
 
 	/** Get the Date that this Range was last checked for cleanliness. */
+	// TODO Make less confusing names for these methods.
 	public Date getDayLastChecked() {
 		return dayLastChecked;
+	}
+	
+	/** Get the number of days since this Range was last checked 
+	 * for cleanliness. */
+	public int getDaysSinceChecked() {
+		Calendar c = Calendar.getInstance();
+		Date today = c.getTime();
+		int daysSinceChecked = Days.daysBetween(new DateTime(dayLastChecked), new DateTime(today)).getDays();
+		return daysSinceChecked;
+	}
+	
+	/** Get the current text Color associated with this Range. */
+	public Color getColor() {
+		return textColor;
+	}
+	
+	/** Re-set the color for this Range. */
+	public void updateColor() {
+		if (getDaysSinceChecked() < 15) {
+			textColor = Color.green;
+		}
+		else if (getDaysSinceChecked() >= 15 && getDaysSinceChecked() < 30) {
+			textColor = Color.YELLOW;
+		}
+		else {
+			textColor = Color.RED;
+		}
+		
+		setForeground(textColor);
 	}
 }
