@@ -66,9 +66,11 @@ public class Range extends JLabel {
 		endCallNumber = end;
 	}
 
-	/** Set the Date this range was last checked to a new Date d. */
+	/** Set the Date this range was last checked to a new Date d. After the Date
+	 * has been changed, update this Range's color. */
 	public void setDayLastChecked(Date d) {
 		dayLastChecked = d;
+		updateColor();
 	}
 
 	/** Get the Date that this Range was last checked for cleanliness. */
@@ -82,8 +84,7 @@ public class Range extends JLabel {
 	public int getDaysSinceChecked() {
 		Calendar c = Calendar.getInstance();
 		Date today = c.getTime();
-		int daysSinceChecked = Days.daysBetween(new DateTime(dayLastChecked), new DateTime(today)).getDays();
-		return daysSinceChecked;
+		return Days.daysBetween(new DateTime(dayLastChecked), new DateTime(today)).getDays();
 	}
 	
 	/** Get the current text Color associated with this Range. */
@@ -92,6 +93,9 @@ public class Range extends JLabel {
 	}
 	
 	/** Re-set the color for this Range. */
+	// TODO I shouldn't even need this method - this behavior should occur any 
+	// time days since checked gets changed. See setDayLastChecked.
+	// TODO Should this be changed to protected?
 	public void updateColor() {
 		if (getDaysSinceChecked() < 15) {
 			textColor = Color.green;

@@ -1,5 +1,6 @@
 package com.heatmap;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -9,11 +10,13 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Date;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JApplet;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
@@ -23,262 +26,261 @@ import org.jdesktop.swingx.JXDatePicker;
  *
  * @author Daniel Neel */
 public class GUI extends JApplet implements MouseListener {
-	/** Floor that represents the library's third floor. */
-	private Floor thirdFloor;
-	
-	/** Floor that represents the library's fourth floor. */
-	private Floor fourthFloor;
-	
-	/** Panel that contains the components for the shelf map. */
-	private JPanel floorComponents;
-	
-	/** The Range currently clicked on to be edited by the user. */
-	private Range clickedRange;
-	
-	/** Label that displays which Range is currently being edited. */
-	private JLabel clickedRangeStart = new JLabel("Start: ");
-	
-	/** Label that displays which Range is currently being edited. */
-	private JLabel clickedRangeEnd = new JLabel("End: ");
-	
-	/** Field to change the clicked-on Range's starting call #. */
-	private JTextField newRangeStart = new JTextField("", 10);
-	
-	/** Field to change the clicked-on Range's ending call #. */
-	private JTextField newRangeEnd = new JTextField("", 10);
+    /** Floor that represents the library's third floor. */
+    private Floor thirdFloor;
 
-	/** Label that displays the number of days since the currently 
-	 * moused-over Range has been checked. */
-	// TODO Use input verification on the text fields to ensure values are appropriate.
-	//      See http://docs.oracle.com/javase/tutorial/uiswing/misc/focus.html#inputVerification
-	// TODO Add some checking to make sure the user can't add dates from the future.
-	private JXDatePicker newDaysSinceChecked = new JXDatePicker(new Date());
-	
-	/** Label to display the clicked-on Range's starting call #. */
-	private JLabel currentRangeStart = new JLabel("<start>");
+    /** Floor that represents the library's fourth floor. */
+    private Floor fourthFloor;
+    
+    /** The group that radio buttons for each Floor belongs to. */
+    private ButtonGroup floorButtons = new ButtonGroup();
 
-	/** Label to display the clicked-on Range's ending call #. */
-	private JLabel currentRangeEnd = new JLabel("<end>");
-	
-	/** Label to display the clicked-on Range's days since it was checked. */
-	private JLabel currentDayLastChecked = new JLabel("<days>");
+    /** Panel that contains the components for the shelf map. */
+    private JPanel floorComponents;
 
-	/** Button to change attributes of the currently clicked Range. */
-	private JButton submitData = new JButton("Submit");
-	
-	/** Constraints used to place components in floorComponents. */
-	private GridBagConstraints fCConstraints;
-	
-	/** The Floor currently being viewed by the user. */
-	private Floor currentFloor = null;
-	
-	/** Whether or not a Range has been clicked, to lock editing. */
-	private Boolean focused = false;
+    /** The Range currently clicked on to be edited by the user. */
+    private Range clickedRange;
 
-	/** Button to cancel editing of a Range's information. */
-	private JButton cancel = new JButton("Cancel");
+    /** Field to change the clicked-on Range's starting call #. */
+    private JTextField newRangeStart = new JTextField("", 10);
+
+    /** Field to change the clicked-on Range's ending call #. */
+    private JTextField newRangeEnd = new JTextField("", 10);
+
+    /** Label that displays the number of days since the currently
+     * moused-over Range has been checked. */
+    // TODO Use input verification on the text fields to ensure values are appropriate.
+    //      See http://docs.oracle.com/javase/tutorial/uiswing/misc/focus.html#inputVerification
+    // TODO Add some checking to make sure the user can't add dates from the future.
+    private JXDatePicker newDaysSinceChecked = new JXDatePicker(new Date());
+
+    /** Button to change attributes of the currently clicked Range. */
+    private JButton submitData = new JButton("Submit");
+
+    /** Constraints used to place components in floorComponents. */
+    private GridBagConstraints fCConstraints;
+
+    /** The Floor currently being viewed by the user. */
+    private Floor currentFloor = null;
+
+    /** Whether or not a Range has been clicked, to lock editing. */
+    private Boolean focused = false;
+
+    /** Button to cancel editing of a Range's information. */
+    private JButton cancel = new JButton("Cancel");
+
+    /** A bit of text that displays a title for the program. */
+    private JLabel programTitle = new JLabel("Stacks Cleanliness Heat Map");
 
     /** Attempt to initialize the GUI for this program. */
-	@Override
+    @Override
     public void init() {
-    	try {
+        try {
             SwingUtilities.invokeAndWait(new Runnable() {
-            	public void run() {
-            		createGUI();
-            	}
+                public void run() {
+                    createGUI();
+                }
             });
         } catch (Exception e) {
             System.err.println("createGUI didn't complete successfully");
         }
     }
-    
+
     /** Set up the GUI used for the program.*/
-    public void createGUI() {
-    	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    private void createGUI() {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        setSize((int) screenSize.getWidth(), (int) screenSize.getHeight());
+        setLayout(new GridBagLayout());
+        GridBagConstraints g = new GridBagConstraints();
+        g.anchor = GridBagConstraints.NORTHWEST;
+        g.weightx = 0.3;
 
-    	setSize((int) screenSize.getWidth(), (int) screenSize.getHeight());
-    	setLayout(new GridBagLayout());
-    	GridBagConstraints g = new GridBagConstraints();
-    	g.anchor = GridBagConstraints.NORTHWEST;
-    	g.weightx = 0.3;
-    	
-    	// Initialize the Floors.
-    	thirdFloor = new Floor(3);
-    	fourthFloor = new Floor(4);
+        // Initialize the Floors.
+        thirdFloor = new Floor(3);
+        fourthFloor = new Floor(4);
+        addAt(programTitle, 1, 0, g);
 
-    	addAt(new JLabel("Stacks Cleanliness Heat map"), 1, 0, g);
-    	
-    	thirdFloor.getButton().addMouseListener(this);
-    	fourthFloor.getButton().addMouseListener(this);
-    	
-    	addAt(thirdFloor.getButton(), thirdFloor.getButtonX(), thirdFloor.getButtonY(), g);
-    	addAt(fourthFloor.getButton(), fourthFloor.getButtonX(), fourthFloor.getButtonY(), g);
+        floorButtons.add(thirdFloor.getButton());
+        floorButtons.add(fourthFloor.getButton());
+        
+        thirdFloor.getButton().addMouseListener(this);
+        fourthFloor.getButton().addMouseListener(this);
 
-    	floorComponents = new JPanel();
-    	g.gridheight = 3;
-    	floorComponents.setLayout(new GridBagLayout());
-    	g.weighty = 1;
-    	addAt(floorComponents, 1, 1, g);
-    	
-    	g.weighty = 0;
-    	g.gridheight = 1;
-    	addAt(clickedRangeStart, 2, 0, g);
-    	addAt(clickedRangeEnd, 2, 1, g);
-    	addAt(new JLabel("Day last checked: "), 2, 2, g);
-    	addAt(currentRangeStart, 3, 0, g);
-    	// TODO Fix the problem where, when resizing the window, input fields shrink.
-    	// TODO Look up more about minimum sizes, see if it's possible 
-    	// to make a component non-resizable.
-    	newRangeStart.setMinimumSize(new Dimension(100, 20));
-    	addAt(newRangeStart, 4, 0, g);
-    	addAt(currentRangeEnd, 3, 1, g);
-    	newRangeEnd.setMinimumSize(new Dimension(100, 20));
-    	addAt(newRangeEnd, 4, 1, g);
-    	addAt(currentDayLastChecked, 3, 2, g);
-    	addAt(newDaysSinceChecked, 4, 2, g);
+        addAt(thirdFloor.getButton(), thirdFloor.getButtonX(), thirdFloor.getButtonY(), g);
+        addAt(fourthFloor.getButton(), fourthFloor.getButtonX(), fourthFloor.getButtonY(), g);
 
-    	cancel.addMouseListener(this);
-    	addAt(cancel, 6, 0, g);
-    	
-    	submitData.addMouseListener(this);
-    	submitData.setEnabled(false);
-    	addAt(submitData, 6, 1, g);
-    	
-    	allowInput(false);
-    	fCConstraints = new GridBagConstraints();
+        floorComponents = new JPanel();
+        g.gridheight = 3;
+        floorComponents.setLayout(new GridBagLayout());
+        g.weighty = 1;
+        addAt(floorComponents, 1, 1, g);
+
+        g.weighty = 0;
+        g.gridheight = 1;
+        addAt(new JLabel("Start: "), 2, 0, g);
+        addAt(new JLabel("End: "), 2, 1, g);
+        addAt(new JLabel("Day last checked: "), 2, 2, g);
+        newRangeStart.setMinimumSize(new Dimension(100, 20));
+        addAt(newRangeStart, 3, 0, g);
+        newRangeEnd.setMinimumSize(new Dimension(100, 20));
+        addAt(newRangeEnd, 3, 1, g);
+        addAt(newDaysSinceChecked, 3, 2, g);
+
+        cancel.addMouseListener(this);
+        addAt(cancel, 6, 0, g);
+
+        submitData.addMouseListener(this);
+        submitData.setEnabled(false);
+        addAt(submitData, 6, 1, g);
+
+        allowInput(false);
+        fCConstraints = new GridBagConstraints();
+        fCConstraints.insets = new Insets(0, 2, 0, 2);
     }
 
-    /** Display a given Floor f's Ranges on this GUI. */
-    public void displayFloor(Floor f) {
-    	if (f != thirdFloor && f != fourthFloor) {
-    		System.out.println("Error! Tried to display a Floor that does not exist.");
-    	}
-    	else {
-    		floorComponents.removeAll();
-    		clearInput();
-    		allowInput(false);
-    		fCConstraints.insets = new Insets(0, 2, 0, 2);
+    /** Display a given Floor floor's Ranges on this GUI. */
+    private void displayFloor(Floor floor) {
+        if (floor != thirdFloor && floor != fourthFloor) {
+            System.out.println("Error! Tried to display a Floor that does not exist.");
+        }
+        else {
+            floorComponents.removeAll();
+            clearInput();
+            allowInput(false);
 
-    		for (Range r : f.getRanges()) {
-    			fCConstraints.gridx = r.getXCoord();
-    			fCConstraints.gridy = r.getYCoord();
-    			r.addMouseListener(this);
-    			// TODO Do I need to update the color when I add the component?
-    			r.updateColor();
-    			floorComponents.add(r, fCConstraints);
-    		}
-    		
-    		floorComponents.revalidate();
-    	}
+            for (Range r : floor.getRanges()) {
+                fCConstraints.gridx = r.getXCoord();
+                fCConstraints.gridy = r.getYCoord();
+                r.addMouseListener(this);
+                floorComponents.add(r, fCConstraints);
+            }
+
+            floorComponents.revalidate();
+            floor.getButton().setEnabled(false);
+            // TODO Encapsulate the floor's text inside each Floor object, and use that text to
+            //      set the title?
+            if (floor == thirdFloor) {
+                programTitle.setText("Stacks Cleanliness Heat Map | 3rd floor");
+            }
+            else {
+                programTitle.setText("Stacks Cleanliness Heat Map | 4th floor");
+            }
+        }
     }
-    
+
     /** Clear all input fields on this GUI of their data. */
-    public void clearInput() {
-    	newRangeStart.setText("");
-    	newRangeEnd.setText("");
-    	newDaysSinceChecked.setDate(new Date());
+    private void clearInput() {
+        newRangeStart.setText("");
+        newRangeEnd.setText("");
+        newDaysSinceChecked.setDate(new Date());
     }
-    
-    /** Allow or disallow the user to edit the properties 
+
+    /** Allow or disallow the user to edit the properties
      * of a clicked-on Range. */
-    public void allowInput(Boolean b) {
-    	newRangeStart.setEnabled(b);
-    	newRangeEnd.setEnabled(b);
-    	newDaysSinceChecked.setEnabled(b);
-    	submitData.setEnabled(b);
-    	cancel.setEnabled(b);
+    private void allowInput(Boolean b) {
+        newRangeStart.setEnabled(b);
+        newRangeEnd.setEnabled(b);
+        newDaysSinceChecked.setEnabled(b);
+        submitData.setEnabled(b);
+        cancel.setEnabled(b);
+
+        // Disable the 3rd and 4th buttons when input is allowed,
+        // and enable the 3rd and 4th buttons when input is not allowed.
+        thirdFloor.getButton().setEnabled(!b);
+        fourthFloor.getButton().setEnabled(!b);
     }
 
     /** Allow the user to change the clicked on Range on the viewed Floor's properties. */
     @Override
     public void mouseClicked(MouseEvent e) {
-    	// Select the clicked-on Range for editing.
-    	if (e.getComponent() instanceof Range) {
-	    	Range r = (Range) e.getSource();
-	    	clickedRange = r;
-	    	clickedRangeStart.setText("Start (" + r.getXCoord() + "," + r.getYCoord() + "):");
-	    	currentRangeStart.setText(r.getStart());
-	    	clickedRangeEnd.setText("End (" + r.getXCoord() + "," + r.getYCoord() + "):");
-	    	currentRangeEnd.setText(r.getEnd());
-	    	clickedRange.updateColor();
-	    	focused = true;
-	    	allowInput(true);
-    	}
+    	System.out.println(e);
     	
-    	// Change the values of a Range's properties depending on user input.
-    	else if (e.getComponent() instanceof JButton) {
-    		JButton button = (JButton) e.getComponent();
+        // Select the clicked-on Range for editing.
+        if (e.getComponent() instanceof Range) {
+            clickedRange = (Range) e.getSource();
+            clickedRange.setForeground(Color.BLUE);
+            focused = true;
+            allowInput(true);
+        }
 
-    		if (button == submitData) {
-    			if (newRangeStart.getText().isEmpty() == false) {
-    				clickedRange.setStart(newRangeStart.getText());
-    			}
-    			if (newRangeEnd.getText().isEmpty() == false) {
-    				clickedRange.setEnd(newRangeEnd.getText());
-    			}
-    			
-    			clickedRange.setDayLastChecked(newDaysSinceChecked.getDate());
-    			clickedRange.updateColor();
-    		}
-    		else if (button == cancel) {
-    			System.out.println("Cancel!");
-    			allowInput(false);
-    		}
+        // Change the values of a Range's properties depending on user input.
+        else if (e.getComponent() instanceof JButton) {
+            JButton button = (JButton) e.getComponent();
 
-    		// TODO Would radio buttons or an equivalent be more natural to use than buttons
-    		//      for floor switching?
-			// TODO Do I need this currentFloor != check? In this case, other Floor
-			//      buttons should be greyed out.
-    		else if (button == thirdFloor.getButton() && currentFloor != thirdFloor) {
-    		    currentFloor = thirdFloor;
-    		    fourthFloor.getButton().setEnabled(true);
-    		    currentFloor.getButton().setEnabled(false);
-    		}
+            if (button == submitData) {
+                if (newRangeStart.getText().isEmpty() == false) {
+                    clickedRange.setStart(newRangeStart.getText());
+                }
+                if (newRangeEnd.getText().isEmpty() == false) {
+                    clickedRange.setEnd(newRangeEnd.getText());
+                }
 
-    		else if (button == fourthFloor.getButton() && currentFloor != fourthFloor) {
-    		    currentFloor = fourthFloor;
-    		    thirdFloor.getButton().setEnabled(true);
-    		    currentFloor.getButton().setEnabled(false);
-    		}
+                clickedRange.setDayLastChecked(newDaysSinceChecked.getDate());
+                currentFloor.write();
+            }
 
-    		clearInput();
-    		focused = false;
-    		clickedRange = null;
-    		displayFloor(currentFloor);
-    		currentFloor.write();
-    	}
+            focused = false;
+            clearInput();
+            // Remove the clicked Range's color that indicates it is selected.
+            clickedRange.updateColor();
+            allowInput(false);
+        }
+
+        else if (e.getComponent() instanceof JRadioButton) {
+            JRadioButton button = (JRadioButton) e.getComponent();
+
+            if (button == thirdFloor.getButton()) {
+                currentFloor = thirdFloor;
+            }
+            else if (button == fourthFloor.getButton()) {
+                currentFloor = fourthFloor;
+            }
+            
+            clearInput();
+            focused = false;
+            displayFloor(currentFloor);
+            currentFloor.write();
+        }
     }
-    
+
+    // TODO Currently there's a bug with resetting the Cyan text color after selection.
     /** Add a given JComponent c to the GUI at coordinates (x, y). */
-    public void addAt(JComponent c, int x, int y, GridBagConstraints g) {
-    	g.gridx = x;
-    	g.gridy = y;
-    	add(c, g);
+    private void addAt(JComponent c, int x, int y, GridBagConstraints g) {
+        g.gridx = x;
+        g.gridy = y;
+        add(c, g);
     }
 
-    /** Update the GUI components that display information about the 
+    /** Update the GUI components that display information about the
      * currently moused-over Range. */
     @Override
     public void mouseEntered(MouseEvent e) {
-    	if (focused == false && e.getComponent() instanceof Range) { 
-   			Range r = (Range) e.getSource();
-   			clickedRangeStart.setText("Start (" + r.getXCoord() + "," + r.getYCoord() + "):");
-   			currentRangeStart.setText(r.getStart());
-   			clickedRangeEnd.setText("End (" + r.getXCoord() + "," + r.getYCoord() + "):");
-   			currentRangeEnd.setText(r.getEnd());
-   			// TODO Have this printed out on the label prettily - remove the irrelevant info.
-   			currentDayLastChecked.setText(r.getDayLastChecked().toLocaleString() + " (" + Integer.toString(r.getDaysSinceChecked()) + ")");
-    	}
+    	// LEFTOFFHERE Just removed useless fields from the class. Now I should be safe to give
+    	// newRangeStart/End better names.
+    	// TODO Give newRangeStart/End variables better names.
+        if (focused == false && e.getComponent() instanceof Range) {
+            Range r = (Range) e.getSource();
+            newRangeStart.setText(r.getStart());
+            newRangeEnd.setText(r.getEnd());
+            newDaysSinceChecked.setDate(r.getDayLastChecked());
+            r.setForeground(Color.CYAN);
+            // TODO Try to have the date picker display text in a more human-readable format.
+            // TODO Implement holding Control to select multiple ranges at once.
+        }
     }
-    
+
     @Override
     public void mouseExited(MouseEvent e) {
+    	if (focused == false && e.getComponent() instanceof Range) {
+    		Range r = (Range) e.getSource();
+    		r.updateColor();
+    	}
     }
-    
+
     @Override
     public void mousePressed(MouseEvent e) {
     }
-    
+
     @Override
     public void mouseReleased(MouseEvent e) {
     }

@@ -7,7 +7,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 
-import javax.swing.JButton;
+import javax.swing.JRadioButton;
 
 import nu.xom.Builder;
 import nu.xom.Document;
@@ -31,8 +31,8 @@ public class Floor {
 	/** The path to this Floor's data file. */
 	private String floorPath;
 	
-	/** Button used to display this Floor in the GUI. */
-	private JButton button;
+	/** Radio button used to display this Floor in the GUI. */
+	private JRadioButton button;
 	
 	// TODO [Maybe] Even more clean would be a class that extends JButton and stores x/y values.
 	/** The x-coordinate of this Floor's button. */
@@ -47,17 +47,17 @@ public class Floor {
 	}
 
 	/** Create a set of Ranges that represents a Floor of the library. */
-	public void makeFloor(int floorNumber) {
+	private void makeFloor(int floorNumber) {
 		if (floorNumber == 3 || floorNumber == 4) {
 
 			if (floorNumber == 3) {
 				floorPath = "../res/floorData/thirdFloor.xml";
-				button = new JButton("3rd floor");
+				button = new JRadioButton("3rd floor");
 				buttonY = 1;
 			}
 			else {
 				floorPath = "../res/floorData/fourthFloor.xml";
-				button = new JButton("4th floor");
+				button = new JRadioButton("4th floor");
 				buttonY = 2;
 			}
 			
@@ -74,7 +74,7 @@ public class Floor {
 	    			
 	    			// Make an array of Ranges, that's as large as the number of 
 	    			// Ranges stored in the data file.
-	    			ranges = new ArrayList<>(rangeElements.size());
+	    			ranges = new ArrayList<Range>(rangeElements.size());
 	    			
 	    			for (int i = 0; i < rangeElements.size(); i++) {
 	    				Element e = rangeElements.get(i);
@@ -110,7 +110,7 @@ public class Floor {
 	
 	/** Store the information for every Range on this Floor 
 	 * into this Floor's data file. */
-	public void write() {
+	 void write() {
 		Element root = floorDataFile.getRootElement();
 		Elements fileRanges = root.getChildElements();
 
@@ -158,7 +158,7 @@ public class Floor {
     }
     
     /** Get this Floor's button. */
-    public JButton getButton() {
+    public JRadioButton getButton() {
     	return button;
     }
     
