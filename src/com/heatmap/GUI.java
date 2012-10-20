@@ -192,8 +192,6 @@ public class GUI extends JApplet implements MouseListener {
     /** Allow the user to change the clicked on Range on the viewed Floor's properties. */
     @Override
     public void mouseClicked(MouseEvent e) {
-        // TODO Consider adding this onclicked behavior to a method
-        // in the relevant class, and calling that method on click.
         // Select the clicked-on Range for editing.
         if (e.getComponent() instanceof Range && !focused) {
             clickedRange = (Range) e.getSource();
@@ -233,8 +231,6 @@ public class GUI extends JApplet implements MouseListener {
         }
     }
 
-    // TODO Fix the bug where you: 1) Select a range. 2) Change Floors 3) Go back to the original floor. The clicked
-    // Range is still highlighted in blue.
     /** Add a given JComponent c to the GUI at coordinates (x, y). */
     private void addAt(JComponent component, int x, int y, GridBagConstraints constraints) {
         constraints.gridx = x;
@@ -251,8 +247,7 @@ public class GUI extends JApplet implements MouseListener {
             startCallNumber.setText(r.getStart());
             endCallNumber.setText(r.getEnd());
             dayLastChecked.setDate(r.getDayLastChecked());
-            // TODO Move this setForeground(Cyan) into updateColor()?
-            r.setForeground(Color.CYAN);
+            r.updateColor("mousedover");
             // TODO Try to have the date picker display text in a more human-readable format.
             // TODO Implement holding Control to select multiple ranges at once.
         }
@@ -262,7 +257,7 @@ public class GUI extends JApplet implements MouseListener {
     public void mouseExited(MouseEvent e) {
     	if (! focused && e.getComponent() instanceof Range) {
     		Range r = (Range) e.getSource();
-    		r.updateColor(false);
+    		r.updateColor("none");
     	}
     }
 
@@ -277,11 +272,15 @@ public class GUI extends JApplet implements MouseListener {
     // TODO Is setting a few values to the same Boolean a sign of duplication?
     /** (Dis)Allow the user to input data for a selected Range. */
     public void inputMode(Boolean b) {
-        if (!b) {
-            clearInput();
+        if (b) {
+            clickedRange.updateColor("clicked");
         }
+        else {
+            clearInput();
+            clickedRange.updateColor("none");
+        }
+
         focused = b;
-        clickedRange.updateColor(b);
         allowInput(b);
     }
 }

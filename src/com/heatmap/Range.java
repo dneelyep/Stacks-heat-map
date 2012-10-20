@@ -67,7 +67,7 @@ public class Range extends JLabel {
 	 * has been changed, update this Range's color. */
 	public void setDayLastChecked(Date d) {
 		dayLastChecked = d;
-		updateColor(false);
+		updateColor("none");
 	}
 
 	/** Get the Date that this Range was last checked for cleanliness. */
@@ -87,9 +87,12 @@ public class Range extends JLabel {
      * the focused color rather than the normal Range color. */
 	// TODO Should this be changed to protected?
     // TODO Make it more clear in the code what the false in updateColor(false) means.
-	public void updateColor(Boolean clicked) {
-        if (clicked) {
+	public void updateColor(String action) {
+        if (action.equals("clicked")) {
             setForeground(Color.BLUE);
+        }
+        else if (action.equals("mousedover")) {
+            setForeground(Color.CYAN);
         }
         else {
             if (getDaysSinceChecked() < 15) {
