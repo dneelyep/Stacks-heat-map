@@ -51,12 +51,12 @@ public class Floor {
 		if (floorNumber == 3 || floorNumber == 4) {
 
 			if (floorNumber == 3) {
-				floorPath = "../res/floorData/thirdFloor.xml";
+				floorPath = "C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/floorData/thirdFloor.xml";
 				button = new JRadioButton("3rd floor");
 				buttonY = 1;
 			}
 			else {
-				floorPath = "../res/floorData/fourthFloor.xml";
+                floorPath = "C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/floorData/fourthFloor.xml";
 				button = new JRadioButton("4th floor");
 				buttonY = 2;
 			}

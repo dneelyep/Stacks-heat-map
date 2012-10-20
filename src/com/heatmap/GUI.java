@@ -42,17 +42,18 @@ public class GUI extends JApplet implements MouseListener {
     private Range clickedRange;
 
     /** Field to change the clicked-on Range's starting call #. */
-    private JTextField newRangeStart = new JTextField("", 10);
+    private JTextField startCallNumber = new JTextField("", 10);
 
     /** Field to change the clicked-on Range's ending call #. */
-    private JTextField newRangeEnd = new JTextField("", 10);
+    private JTextField endCallNumber = new JTextField("", 10);
 
     /** Label that displays the number of days since the currently
      * moused-over Range has been checked. */
     // TODO Use input verification on the text fields to ensure values are appropriate.
     //      See http://docs.oracle.com/javase/tutorial/uiswing/misc/focus.html#inputVerification
     // TODO Add some checking to make sure the user can't add dates from the future.
-    private JXDatePicker newDaysSinceChecked = new JXDatePicker(new Date());
+    // TODO Fix the bug where, after I click a Range to input data, I can still click another Range.
+    private JXDatePicker newDayLastChecked = new JXDatePicker();
 
     /** Button to change attributes of the currently clicked Range. */
     private JButton submitData = new JButton("Submit");
@@ -82,7 +83,7 @@ public class GUI extends JApplet implements MouseListener {
                 }
             });
         } catch (Exception e) {
-            System.err.println("createGUI didn't complete successfully");
+            System.err.println("createGUI didn't complete successfully: " + e);
         }
     }
 
@@ -110,7 +111,7 @@ public class GUI extends JApplet implements MouseListener {
         addAt(fourthFloor.getButton(), fourthFloor.getButtonX(), fourthFloor.getButtonY(), g);
 
         floorComponents = new JPanel();
-        g.gridheight = 3;
+        g.gridheight = 36;
         floorComponents.setLayout(new GridBagLayout());
         g.weighty = 1;
         addAt(floorComponents, 1, 1, g);
@@ -119,12 +120,21 @@ public class GUI extends JApplet implements MouseListener {
         g.gridheight = 1;
         addAt(new JLabel("Start: "), 2, 0, g);
         addAt(new JLabel("End: "), 2, 1, g);
-        addAt(new JLabel("Day last checked: "), 2, 2, g);
-        newRangeStart.setMinimumSize(new Dimension(100, 20));
-        addAt(newRangeStart, 3, 0, g);
-        newRangeEnd.setMinimumSize(new Dimension(100, 20));
-        addAt(newRangeEnd, 3, 1, g);
-        addAt(newDaysSinceChecked, 3, 2, g);
+        addAt(new JLabel("Last checked: "), 2, 2, g);
+        addAt(new JLabel("Last shifted: "), 2, 3, g);
+        addAt(new JLabel("Last faced: "), 2, 4, g);
+        addAt(new JLabel("Last dusted: "), 2, 5, g);
+        addAt(new JLabel("Last read: "), 2, 6, g);
+
+        startCallNumber.setMinimumSize(new Dimension(100, 20));
+        addAt(startCallNumber, 3, 0, g);
+        endCallNumber.setMinimumSize(new Dimension(100, 20));
+        addAt(endCallNumber, 3, 1, g);
+        addAt(newDayLastChecked, 3, 2, g);
+        addAt(new JXDatePicker(), 3, 3, g);
+        addAt(new JXDatePicker(), 3, 4, g);
+        addAt(new JXDatePicker(), 3, 5, g);
+        addAt(new JXDatePicker(), 3, 6, g);
 
         cancel.addMouseListener(this);
         addAt(cancel, 6, 0, g);
@@ -132,6 +142,12 @@ public class GUI extends JApplet implements MouseListener {
         submitData.addMouseListener(this);
         submitData.setEnabled(false);
         addAt(submitData, 6, 1, g);
+
+        addAt(new JRadioButton("Checked"), 6, 2, g);
+        addAt(new JRadioButton("Shifted"), 6, 3, g);
+        addAt(new JRadioButton("Faced"), 6, 4, g);
+        addAt(new JRadioButton("Dusted"), 6, 5, g);
+        addAt(new JRadioButton("Read"), 6, 6, g);
 
         allowInput(false);
         fCConstraints = new GridBagConstraints();
@@ -141,7 +157,7 @@ public class GUI extends JApplet implements MouseListener {
     /** Display a given Floor floor's Ranges on this GUI. */
     private void displayFloor(Floor floor) {
         if (floor != thirdFloor && floor != fourthFloor) {
-            System.out.println("Error! Tried to display a Floor that does not exist.");
+            System.err.println("Error! Tried to display a Floor that does not exist.");
         }
         else {
             floorComponents.removeAll();
@@ -156,45 +172,30 @@ public class GUI extends JApplet implements MouseListener {
             }
 
             floorComponents.revalidate();
-            floor.getButton().setEnabled(false);
-            // TODO Encapsulate the floor's text inside each Floor object, and use that text to
-            //      set the title?
-            if (floor == thirdFloor) {
-                programTitle.setText("Stacks Cleanliness Heat Map | 3rd floor");
-            }
-            else {
-                programTitle.setText("Stacks Cleanliness Heat Map | 4th floor");
-            }
+            programTitle.setText("Stacks Cleanliness Heat Map | " + floor.getButton().getText());
         }
     }
 
     /** Clear all input fields on this GUI of their data. */
     private void clearInput() {
-        newRangeStart.setText("");
-        newRangeEnd.setText("");
-        newDaysSinceChecked.setDate(new Date());
+        startCallNumber.setText("");
+        endCallNumber.setText("");
+        newDayLastChecked.setDate(new Date());
     }
 
     /** Allow or disallow the user to edit the properties
      * of a clicked-on Range. */
     private void allowInput(Boolean b) {
-        newRangeStart.setEnabled(b);
-        newRangeEnd.setEnabled(b);
-        newDaysSinceChecked.setEnabled(b);
+        startCallNumber.setEnabled(b);
+        endCallNumber.setEnabled(b);
+        newDayLastChecked.setEnabled(b);
         submitData.setEnabled(b);
         cancel.setEnabled(b);
-
-        // Disable the 3rd and 4th buttons when input is allowed,
-        // and enable the 3rd and 4th buttons when input is not allowed.
-        thirdFloor.getButton().setEnabled(!b);
-        fourthFloor.getButton().setEnabled(!b);
     }
 
     /** Allow the user to change the clicked on Range on the viewed Floor's properties. */
     @Override
     public void mouseClicked(MouseEvent e) {
-    	System.out.println(e);
-    	
         // Select the clicked-on Range for editing.
         if (e.getComponent() instanceof Range) {
             clickedRange = (Range) e.getSource();
@@ -208,14 +209,14 @@ public class GUI extends JApplet implements MouseListener {
             JButton button = (JButton) e.getComponent();
 
             if (button == submitData) {
-                if (newRangeStart.getText().isEmpty() == false) {
-                    clickedRange.setStart(newRangeStart.getText());
+                if (startCallNumber.getText().isEmpty() == false) {
+                    clickedRange.setStart(startCallNumber.getText());
                 }
-                if (newRangeEnd.getText().isEmpty() == false) {
-                    clickedRange.setEnd(newRangeEnd.getText());
+                if (endCallNumber.getText().isEmpty() == false) {
+                    clickedRange.setEnd(endCallNumber.getText());
                 }
 
-                clickedRange.setDayLastChecked(newDaysSinceChecked.getDate());
+                clickedRange.setDayLastChecked(newDayLastChecked.getDate());
                 currentFloor.write();
             }
 
@@ -255,14 +256,11 @@ public class GUI extends JApplet implements MouseListener {
      * currently moused-over Range. */
     @Override
     public void mouseEntered(MouseEvent e) {
-    	// LEFTOFFHERE Just removed useless fields from the class. Now I should be safe to give
-    	// newRangeStart/End better names.
-    	// TODO Give newRangeStart/End variables better names.
         if (focused == false && e.getComponent() instanceof Range) {
             Range r = (Range) e.getSource();
-            newRangeStart.setText(r.getStart());
-            newRangeEnd.setText(r.getEnd());
-            newDaysSinceChecked.setDate(r.getDayLastChecked());
+            startCallNumber.setText(r.getStart());
+            endCallNumber.setText(r.getEnd());
+            newDayLastChecked.setDate(r.getDayLastChecked());
             r.setForeground(Color.CYAN);
             // TODO Try to have the date picker display text in a more human-readable format.
             // TODO Implement holding Control to select multiple ranges at once.
