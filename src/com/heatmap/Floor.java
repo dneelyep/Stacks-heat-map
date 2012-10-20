@@ -48,8 +48,7 @@ public class Floor {
 
 	/** Create a set of Ranges that represents a Floor of the library. */
 	private void makeFloor(int floorNumber) {
-		if (floorNumber == 3 || floorNumber == 4) {
-
+		if ((floorNumber == 3 || floorNumber == 4) && !initialized) {
 			if (floorNumber == 3) {
 				floorPath = "C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/floorData/thirdFloor.xml";
 				button = new JRadioButton("3rd floor");
@@ -66,42 +65,40 @@ public class Floor {
 			// TODO There has to be a better way of representing a constant object than 
 			// only allowing it to be initialized once as I'm doing here. Maybe an enumeration?
 			// Or make ranges final, so it can't be overridden later? Or make this object final?
-			if (initialized == false) {
-	    		try {
-	    	    	floorDataFile = new Builder().build(floorPath);
-	    			Element root = floorDataFile.getRootElement();
-	    			Elements rangeElements = root.getChildElements();
-	    			
-	    			// Make an array of Ranges, that's as large as the number of 
-	    			// Ranges stored in the data file.
-	    			ranges = new ArrayList<Range>(rangeElements.size());
-	    			
-	    			for (int i = 0; i < rangeElements.size(); i++) {
-	    				Element e = rangeElements.get(i);
-	    				String tmpX = e.getFirstChildElement("x").getValue();
-	    				String tmpY = e.getFirstChildElement("y").getValue();
-	    				ranges.add(new Range(Integer.parseInt(tmpX), Integer.parseInt(tmpY)));
-	    				ranges.get(i).setStart(e.getFirstChildElement("begin").getValue());
-	    				ranges.get(i).setEnd(e.getFirstChildElement("end").getValue());
-	    				
-	    				try {
-	    					DateFormat formatter = DateFormat.getDateInstance();
-	    					ranges.get(i).setDayLastChecked(formatter.parse(e.getFirstChildElement("last-checked").getValue()));
-	    				}
-	    				catch (ParseException p) {
-	    					System.out.println("Error parsing Date:" + p);
-	    				}
-	    			}
-	    		}
-	        	catch (ParsingException e) {
-	        		System.err.println("Error parsing this Floor's XML file.");
-	        	}
-	        	catch (IOException e) {
-	        		System.err.println("IOException: " + e);
-	        	}
-			}
+    		try {
+    	    	floorDataFile = new Builder().build(floorPath);
+    			Element root = floorDataFile.getRootElement();
+    			Elements rangeElements = root.getChildElements();
 
-			initialized = true;
+    			// Make an array of Ranges, that's as large as the number of
+    			// Ranges stored in the data file.
+    			ranges = new ArrayList<Range>(rangeElements.size());
+
+    			for (int i = 0; i < rangeElements.size(); i++) {
+    				Element e = rangeElements.get(i);
+    				String tmpX = e.getFirstChildElement("x").getValue();
+    				String tmpY = e.getFirstChildElement("y").getValue();
+    				ranges.add(new Range(Integer.parseInt(tmpX), Integer.parseInt(tmpY)));
+    				ranges.get(i).setStart(e.getFirstChildElement("begin").getValue());
+    				ranges.get(i).setEnd(e.getFirstChildElement("end").getValue());
+
+    				try {
+    					DateFormat formatter = DateFormat.getDateInstance();
+    					ranges.get(i).setDayLastChecked(formatter.parse(e.getFirstChildElement("last-checked").getValue()));
+                    }
+    				catch (ParseException p) {
+    					System.out.println("Error parsing Date:" + p);
+    				}
+    			}
+    		}
+        	catch (ParsingException e) {
+        		System.err.println("Error parsing this Floor's XML file.");
+        	}
+        	catch (IOException e) {
+        		System.err.println("IOException: " + e);
+        	}
+
+            initialized = true;
 		}
 		else {
 			System.out.println("Error! Tried to create a Floor that does not exist.");			
@@ -151,12 +148,7 @@ public class Floor {
     public ArrayList<Range> getRanges() {
     	return ranges;
     }
-    
-    /** Return this Floor's data file. */
-    public Document getFloorDataFile() {
-    	return floorDataFile;    	
-    }
-    
+
     /** Get this Floor's button. */
     public JRadioButton getButton() {
     	return button;

@@ -25,10 +25,7 @@ public class Range extends JLabel {
 	
 	/** This Range's y-coordinate in the GUI. */
 	private final int YCOORD;
-	
-	/** The color of this Range's text in the GUI. */
-	private Color textColor;
-	
+
 	/** Create a new Range with the given x-coordinate x and y-coordinate y. */
 	public Range(int x, int y) {
 		XCOORD = x;
@@ -70,11 +67,10 @@ public class Range extends JLabel {
 	 * has been changed, update this Range's color. */
 	public void setDayLastChecked(Date d) {
 		dayLastChecked = d;
-		updateColor();
+		updateColor(false);
 	}
 
 	/** Get the Date that this Range was last checked for cleanliness. */
-	// TODO Make less confusing names for these methods.
 	public Date getDayLastChecked() {
 		return dayLastChecked;
 	}
@@ -86,27 +82,25 @@ public class Range extends JLabel {
 		Date today = c.getTime();
 		return Days.daysBetween(new DateTime(dayLastChecked), new DateTime(today)).getDays();
 	}
-	
-	/** Get the current text Color associated with this Range. */
-	public Color getColor() {
-		return textColor;
-	}
-	
-	/** Re-set the color for this Range. */
-	// TODO I shouldn't even need this method - this behavior should occur any 
-	// time days since checked gets changed. See setDayLastChecked.
+
+	/** Re-set the color for this Range. If this Range has been clicked, use
+     * the focused color rather than the normal Range color. */
 	// TODO Should this be changed to protected?
-	public void updateColor() {
-		if (getDaysSinceChecked() < 15) {
-			textColor = Color.green;
-		}
-		else if (getDaysSinceChecked() >= 15 && getDaysSinceChecked() < 30) {
-			textColor = Color.YELLOW;
-		}
-		else {
-			textColor = Color.RED;
-		}
-		
-		setForeground(textColor);
+    // TODO Make it more clear in the code what the false in updateColor(false) means.
+	public void updateColor(Boolean clicked) {
+        if (clicked) {
+            setForeground(Color.BLUE);
+        }
+        else {
+            if (getDaysSinceChecked() < 15) {
+                setForeground(Color.GREEN);
+            }
+            else if (getDaysSinceChecked() >= 15 && getDaysSinceChecked() < 30) {
+                setForeground(Color.YELLOW);
+            }
+            else {
+                setForeground(Color.RED);
+            }
+        }
 	}
 }
