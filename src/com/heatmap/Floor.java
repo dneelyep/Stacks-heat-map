@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.swing.JRadioButton;
 
@@ -34,13 +35,6 @@ public class Floor {
 	/** Radio button used to display this Floor in the GUI. */
 	private JRadioButton button;
 	
-	// TODO [Maybe] Even more clean would be a class that extends JButton and stores x/y values.
-	/** The x-coordinate of this Floor's button. */
-	private int buttonX;
-	
-	/** The y-coordinate of this Floor's button. */
-	private int buttonY;
-	
 	/** Create a new Floor using floorNumber to determine layout. */
 	public Floor(int floorNumber) {	
 		makeFloor(floorNumber);
@@ -50,21 +44,19 @@ public class Floor {
 	private void makeFloor(int floorNumber) {
 		if ((floorNumber == 3 || floorNumber == 4) && !initialized) {
 			if (floorNumber == 3) {
+                // TODO Convert these paths to relative paths or similar.
 				floorPath = "C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/floorData/thirdFloor.xml";
-				button = new JRadioButton("3rd floor");
-				buttonY = 1;
+                button = GUI.addCoords(new JRadioButton("3rd floor"), 0, 1);
 			}
 			else {
                 floorPath = "C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/floorData/fourthFloor.xml";
-				button = new JRadioButton("4th floor");
-				buttonY = 2;
+                button = GUI.addCoords(new JRadioButton("4th floor"), 0, 2);
 			}
-			
-			buttonX = 0;
-						
-			// TODO There has to be a better way of representing a constant object than 
+
+            // TODO There has to be a better way of representing a constant object than
 			// only allowing it to be initialized once as I'm doing here. Maybe an enumeration?
 			// Or make ranges final, so it can't be overridden later? Or make this object final?
+            // TODO Break this up into a separate read() method?
     		try {
     	    	floorDataFile = new Builder().build(floorPath);
     			Element root = floorDataFile.getRootElement();
@@ -76,15 +68,21 @@ public class Floor {
 
     			for (int i = 0; i < rangeElements.size(); i++) {
     				Element e = rangeElements.get(i);
-    				String tmpX = e.getFirstChildElement("x").getValue();
-    				String tmpY = e.getFirstChildElement("y").getValue();
-    				ranges.add(new Range(Integer.parseInt(tmpX), Integer.parseInt(tmpY)));
-    				ranges.get(i).setStart(e.getFirstChildElement("begin").getValue());
-    				ranges.get(i).setEnd(e.getFirstChildElement("end").getValue());
+    				String fileX = e.getFirstChildElement("x").getValue();
+    				String fileY = e.getFirstChildElement("y").getValue();
+    				ranges.add(new Range(Integer.parseInt(fileX), Integer.parseInt(fileY)));
+
+                    Range programRange = ranges.get(i);
+                    programRange.setStart(e.getFirstChildElement("begin").getValue());
+    				programRange.setEnd(e.getFirstChildElement("end").getValue());
 
     				try {
     					DateFormat formatter = DateFormat.getDateInstance();
-    					ranges.get(i).setDayLastChecked(formatter.parse(e.getFirstChildElement("last-checked").getValue()));
+                        programRange.setDayLastChecked(formatter.parse(e.getFirstChildElement("checked").getValue()));
+                        programRange.setDayLastShifted(formatter.parse(e.getFirstChildElement("shifted").getValue()));
+                        programRange.setDayLastFaced(formatter.parse(e.getFirstChildElement("faced").getValue()));
+                        programRange.setDayLastDusted(formatter.parse(e.getFirstChildElement("dusted").getValue()));
+                        programRange.setDayLastRead(formatter.parse(e.getFirstChildElement("read").getValue()));
                     }
     				catch (ParseException p) {
     					System.out.println("Error parsing Date:" + p);
@@ -111,25 +109,35 @@ public class Floor {
 		Element root = floorDataFile.getRootElement();
 		Elements fileRanges = root.getChildElements();
 
+         // Iterate through every Range in the file.
 		for (int i = 0; i < fileRanges.size(); i++) {
-			Element rangeEle = fileRanges.get(i);
-			Elements rangeEleEles= rangeEle.getChildElements();
+            Range programRange = ranges.get(i);
+			Element fileRange = fileRanges.get(i);
+			Elements fileRangeChildren = fileRange.getChildElements();
 			
 			// Get rid of current <range> children in the file.
-			for (int j = 0; j < rangeEleEles.size(); j++) {
-				rangeEleEles.get(j).removeChildren();
+			for (int j = 0; j < fileRangeChildren.size(); j++) {
+				fileRangeChildren.get(j).removeChildren();
 			}
 			
 			// Replace each range's attributes in the file with each object's attributes.
-			rangeEleEles.get(0).appendChild(Integer.toString(ranges.get(i).getXCoord()));
-			rangeEleEles.get(1).appendChild(Integer.toString(ranges.get(i).getYCoord()));
-			rangeEleEles.get(2).appendChild(ranges.get(i).getStart());
-			rangeEleEles.get(3).appendChild(ranges.get(i).getEnd());
-			
+			fileRangeChildren.get(0).appendChild(Integer.toString(programRange.getXCoord()));
+			fileRangeChildren.get(1).appendChild(Integer.toString(programRange.getYCoord()));
+			fileRangeChildren.get(2).appendChild(programRange.getStart());
+			fileRangeChildren.get(3).appendChild(programRange.getEnd());
+
 			// TODO Make formatter a field?
 			DateFormat formatter = DateFormat.getDateInstance();
-			rangeEleEles.get(4).appendChild(formatter.format(ranges.get(i).getDayLastChecked()));
-		}
+
+            // Append the current Range's last checked Dates to the current Range element in the data file.
+            int counter = 4;
+            for (String s : programRange.getDates().keySet()) {
+                if (programRange.getDayLast(s) != null) {
+                    fileRangeChildren.get(counter).appendChild(formatter.format(programRange.getDayLast(s)));
+                }
+                counter++;
+            }
+        }
 
 		floorDataFile.setRootElement(root);
 
@@ -152,16 +160,6 @@ public class Floor {
     /** Get this Floor's button. */
     public JRadioButton getButton() {
     	return button;
-    }
-    
-    /** Get this Floor's button's x-coordinate. */
-    public int getButtonX() {
-    	return buttonX;
-    }
-    
-    /** Get this Floor's button's y-coordinate. */
-    public int getButtonY() {
-    	return buttonY;
     }
 }
 
