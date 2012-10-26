@@ -78,11 +78,11 @@ public class Floor {
 
     				try {
     					DateFormat formatter = DateFormat.getDateInstance();
-                        programRange.setDayLastChecked(formatter.parse(e.getFirstChildElement("checked").getValue()));
-                        programRange.setDayLastShifted(formatter.parse(e.getFirstChildElement("shifted").getValue()));
-                        programRange.setDayLastFaced(formatter.parse(e.getFirstChildElement("faced").getValue()));
-                        programRange.setDayLastDusted(formatter.parse(e.getFirstChildElement("dusted").getValue()));
-                        programRange.setDayLastRead(formatter.parse(e.getFirstChildElement("read").getValue()));
+                        programRange.setDayLast("checked", formatter.parse(e.getFirstChildElement("checked").getValue()));
+                        programRange.setDayLast("shifted", formatter.parse(e.getFirstChildElement("shifted").getValue()));
+                        programRange.setDayLast("faced",   formatter.parse(e.getFirstChildElement("faced").getValue()));
+                        programRange.setDayLast("dusted",  formatter.parse(e.getFirstChildElement("dusted").getValue()));
+                        programRange.setDayLast("read",    formatter.parse(e.getFirstChildElement("read").getValue()));
                     }
     				catch (ParseException p) {
     					System.out.println("Error parsing Date:" + p);

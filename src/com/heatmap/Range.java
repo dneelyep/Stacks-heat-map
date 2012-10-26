@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.swing.*;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.Days;
 
 /** Class to represent a single range of books in the library. */
@@ -31,6 +32,7 @@ public class Range extends JLabel {
     /** The day this Range was last dusted. */
     private Date dayLastDusted;
 
+    // TODO Convert Dates to StackDates.
     /** The day this Range was last shelf read. */
     private Date dayLastRead;
 
@@ -53,6 +55,7 @@ public class Range extends JLabel {
         dateProperties.put("faced", dayLastFaced);
         dateProperties.put("dusted", dayLastDusted);
         dateProperties.put("read", dayLastRead);
+        updateTooltip();
     }
 	
 	/** Get this Range's x-coordinate. */
@@ -78,50 +81,20 @@ public class Range extends JLabel {
 	/** Set this Range's start call number to a new value start. */
 	public void setStart(String start) {
 		startCallNumber = start;
+        updateTooltip();
 	}
 	
 	/** Set this Range's end call number to a new value end. */
 	public void setEnd(String end) {
 		endCallNumber = end;
+        updateTooltip();
 	}
 
-	/** Set the Date this range was last checked to a new Date d. After the Date
-	 * has been changed, update this Range's color. */
-	public void setDayLastChecked(Date d) {
-		dayLastChecked = d;
-        dateProperties.put("checked", dayLastChecked);
-		updateColor("none");
-	}
-
-    /** Set the Date this range was last shifted to a new Date d. After the Date
-     * has been changed, update this Range's color. */
-    public void setDayLastShifted(Date d) {
-        dayLastShifted = d;
-        dateProperties.put("shifted", dayLastShifted);
-        updateColor("none");
-    }
-
-    /** Set the Date this range was last faced to a new Date d. After the Date
-     * has been changed, update this Range's color. */
-    public void setDayLastFaced(Date d) {
-        dayLastFaced = d;
-        dateProperties.put("faced", dayLastFaced);
-        updateColor("none");
-    }
-
-    /** Set the Date this range was last dusted to a new Date d. After the Date
-     * has been changed, update this Range's color. */
-    public void setDayLastDusted(Date d) {
-        dayLastDusted = d;
-        dateProperties.put("dusted", dayLastDusted);
-        updateColor("none");
-    }
-
-    /** Set the Date this range was last shelf read to a new Date d. After the Date
-     * has been changed, update this Range's color. */
-    public void setDayLastRead(Date d) {
-        dayLastRead = d;
-        dateProperties.put("read", dayLastRead);
+    /** Set the Date this Range last had activity done to it to a new Date d. */
+    public void setDayLast(String activity, Date d) {
+        Date desiredActivityDate = dateProperties.get(activity);
+        desiredActivityDate = d;
+        dateProperties.put(activity, desiredActivityDate);
         updateColor("none");
     }
 
@@ -139,38 +112,19 @@ public class Range extends JLabel {
 
     /** Get the number of days since a given
      * activity was performed on this Range. */
-  /*  public int getDaysSince(String activity) {
+    public int getDaysSince(String activity) {
         Calendar c = Calendar.getInstance();
         Date today = c.getTime();
-        // TODO Try to do this more elegantly than a bunch of if/else if statements.
-        if (activity.equals("checked")) {
 
+        if (dateProperties.containsKey(activity)) {
+            return Days.daysBetween(new DateTime(dateProperties.get(activity)), new DateTime(today)).getDays();
         }
-        else if (activity.equals("shifted")) {
-
+        else {
+            // TODO Handle this more elegantly than returning a 0.
+            System.err.println("Error! Attempted to get the number of days since an invalid activity was performed.");
+            return 0;
         }
-        else if (activity.equals("faced")) {
-
-        }
-        else if (activity.equals("dusted")) {
-
-        }
-        else if (activity.equals("read")) {
-
-        }*/
-        // LEFTOFFHERE Implementing this part, need to work in the return statement here.
-    //    return Days.daysBetween(new DateTime(dayLastChecked), new DateTime(today)).getDays();
-//    }
-
-    // TODO Make this a general method for getting days since something was done. Maybe
-    // also do the same for the date getters?
-    /** Get the number of days since this Range was last checked
-	 * for cleanliness. */
-	public int getDaysSinceChecked() {
-		Calendar c = Calendar.getInstance();
-		Date today = c.getTime();
-		return Days.daysBetween(new DateTime(dayLastChecked), new DateTime(today)).getDays();
-	}
+    }
 
 	/** Re-set the color for this Range. If this Range has been clicked, use
      * the focused color rather than the normal Range color. */
@@ -188,16 +142,13 @@ public class Range extends JLabel {
             setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/mousedOverRange.png"));
         }
         else {
-            if (getDaysSinceChecked() < 15) {
-                setForeground(Color.GREEN);
+            if (!action.equals("none") && getDaysSince(action) < 15) {
                 setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/goodRange.png"));
             }
-            else if (getDaysSinceChecked() >= 15 && getDaysSinceChecked() < 30) {
-                setForeground(Color.YELLOW);
+            else if (!action.equals("none") && getDaysSince(action) >= 15 && getDaysSince(action) < 30) {
                 setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/decentRange.png"));
             }
-            else {
-                setForeground(Color.RED);
+            else if (!action.equals("none")) {
                 setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/badRange.png"));
             }
         }
@@ -207,5 +158,10 @@ public class Range extends JLabel {
      * Range lasted had a given activity done to it. */
     public LinkedHashMap<String, Date> getDates() {
         return dateProperties;
+    }
+
+    /** Update the contents of this Range's tooltip. */
+    private void updateTooltip() {
+        setToolTipText("Start: " + startCallNumber + " | End: " + endCallNumber);
     }
 }

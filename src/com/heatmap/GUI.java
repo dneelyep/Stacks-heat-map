@@ -53,14 +53,13 @@ public class GUI extends JApplet implements MouseListener {
     /** Date picker to change the Date the clicked Range was last shelf read. */
     private final JXDatePicker dayLastRead = addCoords(new JXDatePicker(), 3, 6);
 
-    // TODO For some reason, the text on Submit/Cancel are not displaying properly when the gui is first loaded.
     /** Button to change attributes of the currently clicked Range. */
     private final JButton submitData = addCoords(new JButton("Submit"), 6, 1);
 
     /** Button to cancel editing of a Range's information. */
     private final JButton cancel = addCoords(new JButton("Cancel"), 6, 0);
 
-    // TODO Consider associating associating a GUI component with each Date last X. Cleaner potentially.
+    // TODO Consider associating associating a with each Date last X a GUI component. Cleaner potentially.
     /** The collection of input components, gathered together for easy iteration. */
     private final Set<JComponent> inputComponents = new LinkedHashSet<JComponent>();
 
@@ -95,6 +94,8 @@ public class GUI extends JApplet implements MouseListener {
 
     /** Button group to only allow viewing the properties of a single property of Ranges at a time. */
     private ButtonGroup viewDaysSinceButtons = new ButtonGroup();
+
+    // TODO Replace the JRadioButtons with a single select button with multiple choices? Is simpler.
 
     /** Attempt to initialize the GUI for this program. */
     @Override
@@ -174,39 +175,32 @@ public class GUI extends JApplet implements MouseListener {
         submitData.setEnabled(false);
         addComponent(submitData, g);
 
-        // TODO Here can I just iterate through the button group?
-        viewDaysSinceChecked.addMouseListener(this);
-        viewDaysSinceShifted.addMouseListener(this);
-        viewDaysSinceFaced.addMouseListener(this);
-        viewDaysSinceDusted.addMouseListener(this);
-        viewDaysSinceRead.addMouseListener(this);
+        viewDaysSinceChecked.setSelected(true);
 
         // Add buttons to their button group.
-        // LEFTOFFHERE Just added these buttons to their group, so now radio buttons work correctly. Now I need
-        // to, when each button is clicked, update the colors of every Range currently displayed to match the clicked
-        // property.
         viewDaysSinceButtons.add(viewDaysSinceChecked);
         viewDaysSinceButtons.add(viewDaysSinceShifted);
         viewDaysSinceButtons.add(viewDaysSinceFaced);
         viewDaysSinceButtons.add(viewDaysSinceDusted);
         viewDaysSinceButtons.add(viewDaysSinceRead);
 
-        addComponent(viewDaysSinceChecked, g);
-        addComponent(viewDaysSinceShifted, g);
-        addComponent(viewDaysSinceFaced, g);
-        addComponent(viewDaysSinceDusted, g);
-        addComponent(viewDaysSinceRead, g);
+        for (Enumeration<AbstractButton> buttons = viewDaysSinceButtons.getElements(); buttons.hasMoreElements();) {
+            JRadioButton currentButton = (JRadioButton) buttons.nextElement();
+            currentButton.addMouseListener(this);
+            addComponent(currentButton, g);
+        }
 
         fCConstraints = new GridBagConstraints();
         fCConstraints.insets = new Insets(0, 6, 0, 6);
 
         allowInput(false);
         currentFloor = thirdFloor;
-        displayFloor(currentFloor);
+        displayFloor(currentFloor, viewDaysSinceChecked);
     }
 
-    /** Display a given Floor floor's Ranges on this GUI. */
-    private void displayFloor(Floor floor) {
+    /** Display a given Floor floor's Ranges on this GUI, coloring
+     * them according to the Dates in the activityToDisplay. */
+     private void displayFloor(Floor floor, JRadioButton activityToDisplay) {
         // TODO Add a check to make sure the floor is not focused. Or
         // alternatively, disable 3rd/4th floor buttons when we enter focus. See inputmode.
         if (floor != thirdFloor && floor != fourthFloor) {
@@ -220,8 +214,7 @@ public class GUI extends JApplet implements MouseListener {
                 fCConstraints.gridy = r.getYCoord();
                 r.addMouseListener(this);
                 floorComponents.add(r, fCConstraints);
-                r.updateColor("none");
-                r.setToolTipText("Start: " + r.getStart() + " | End: " + r.getEnd());
+                r.updateColor(activityToDisplay.getText().toLowerCase());
             }
 
             floorComponents.revalidate();
@@ -265,8 +258,8 @@ public class GUI extends JApplet implements MouseListener {
             inputMode(false);
         }
 
-        // TODO Do I need a check to see if the Submit button is enabled or not?
-        else if (clickedComponent == submitData) {
+        // TODO Fix how submit/cancel text disappear when not focused.
+        else if (clickedComponent == submitData && submitData.isEnabled()) {
             if (!startCallNumber.getText().isEmpty()) {
                 focusedRange.setStart(startCallNumber.getText());
             }
@@ -275,16 +268,13 @@ public class GUI extends JApplet implements MouseListener {
             }
 
             // TODO Another chance for iteration.
-            focusedRange.setDayLastChecked(dayLastChecked.getDate());
-            focusedRange.setDayLastShifted(dayLastShifted.getDate());
-            focusedRange.setDayLastFaced(dayLastFaced.getDate());
-            focusedRange.setDayLastDusted(dayLastDusted.getDate());
-            focusedRange.setDayLastRead(dayLastRead.getDate());
+            focusedRange.setDayLast("checked", dayLastChecked.getDate());
+            focusedRange.setDayLast("shifted", dayLastShifted.getDate());
+            focusedRange.setDayLast("faced",   dayLastFaced.getDate());
+            focusedRange.setDayLast("dusted",  dayLastDusted.getDate());
+            focusedRange.setDayLast("read",   dayLastRead.getDate());
 
-            // TODO Fix the bug that's causing an exception where I click
-            // submit, with a Range not highlighted, before clicking any Ranges.
             currentFloor.write();
-
             inputMode(false);
         }
 
@@ -303,12 +293,12 @@ public class GUI extends JApplet implements MouseListener {
             }
 
             inputMode(false);
-            displayFloor(currentFloor);
+            displayFloor(currentFloor, (JRadioButton) getSelectedView());
             currentFloor.write();
         }
 
         else if (clickedComponent instanceof JRadioButton) {
-            System.out.println(((JRadioButton) clickedComponent).getText());
+            displayFloor(currentFloor, (JRadioButton) clickedComponent);
         }
     }
 
@@ -342,11 +332,12 @@ public class GUI extends JApplet implements MouseListener {
         }
     }
 
+    /** Actions to undertake when the mouse exits from a given Range. */
     @Override
     public void mouseExited(MouseEvent e) {
     	if (focusedRange == null && e.getComponent() instanceof Range) {
     		Range r = (Range) e.getSource();
-    		r.updateColor("none");
+            r.updateColor(getSelectedView().getText().toLowerCase());
     	}
     }
 
@@ -380,5 +371,18 @@ public class GUI extends JApplet implements MouseListener {
         component.putClientProperty("x", x);
         component.putClientProperty("y", y);
         return component;
+    }
+
+    /** Get the Button that represents the activity that is currently displayed in the GUI. */
+    private AbstractButton getSelectedView() {
+        for (Enumeration<AbstractButton> buttons = viewDaysSinceButtons.getElements(); buttons.hasMoreElements();) {
+            AbstractButton currentButton = buttons.nextElement();
+            if (currentButton.isSelected()) {
+                return currentButton;
+            }
+        }
+
+        // TODO This is a horrible way of handling when no button is selected. Fix it.
+        return new JButton("Error!");
     }
 }
