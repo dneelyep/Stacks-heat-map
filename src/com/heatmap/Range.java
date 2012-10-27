@@ -1,15 +1,15 @@
 package com.heatmap;
 
 import java.awt.Color;
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 import javax.swing.*;
+import javax.swing.text.DateFormatter;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.joda.time.Days;
 
 /** Class to represent a single range of books in the library. */
@@ -37,7 +37,7 @@ public class Range extends JLabel {
     private Date dayLastRead;
 
     /** A Map of all the Date properties that belong to this Range. */
-    private LinkedHashMap<String, Date> dateProperties = new LinkedHashMap<String, Date>(5);
+    private final LinkedHashMap<String, Date> dateProperties = new LinkedHashMap<String, Date>(5);
 
     /** This Range's x-coordinate in the GUI. */
 	private final int XCOORD;
@@ -90,12 +90,10 @@ public class Range extends JLabel {
         updateTooltip();
 	}
 
-    /** Set the Date this Range last had activity done to it to a new Date d. */
-    public void setDayLast(String activity, Date d) {
-        Date desiredActivityDate = dateProperties.get(activity);
-        desiredActivityDate = d;
+    /** Set the Date this Range last had activity done to it to a new Date desiredActivityDate. */
+    public void setDayLast(String activity, Date desiredActivityDate) {
         dateProperties.put(activity, desiredActivityDate);
-        updateColor("none");
+        updateColor(activity);
     }
 
     /** Get the date this Range last had activity done to it. */
@@ -112,7 +110,7 @@ public class Range extends JLabel {
 
     /** Get the number of days since a given
      * activity was performed on this Range. */
-    public int getDaysSince(String activity) {
+    private int getDaysSince(String activity) {
         Calendar c = Calendar.getInstance();
         Date today = c.getTime();
 
@@ -121,7 +119,7 @@ public class Range extends JLabel {
         }
         else {
             // TODO Handle this more elegantly than returning a 0.
-            System.err.println("Error! Attempted to get the number of days since an invalid activity was performed.");
+            System.err.println("Error! Attempted to get the number of days since an invalid activity was performed: " + activity);
             return 0;
         }
     }
@@ -141,14 +139,15 @@ public class Range extends JLabel {
             setForeground(Color.CYAN);
             setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/mousedOverRange.png"));
         }
+        // TODO What's the deal with making sure the action is not "none"?
         else {
-            if (!action.equals("none") && getDaysSince(action) < 15) {
+            if (getDaysSince(action) < 15) {
                 setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/goodRange.png"));
             }
-            else if (!action.equals("none") && getDaysSince(action) >= 15 && getDaysSince(action) < 30) {
+            else if (getDaysSince(action) >= 15 && getDaysSince(action) < 30) {
                 setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/decentRange.png"));
             }
-            else if (!action.equals("none")) {
+            else {
                 setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/badRange.png"));
             }
         }
@@ -161,7 +160,16 @@ public class Range extends JLabel {
     }
 
     /** Update the contents of this Range's tooltip. */
-    private void updateTooltip() {
-        setToolTipText("Start: " + startCallNumber + " | End: " + endCallNumber);
+    public void updateTooltip() {
+        // TODO If I want the more detailed tooltip, I will need to format the Dates. To do that,
+        // I need to check for nulls, etc.
+        setToolTipText("<html>Start: " + startCallNumber
+                     + "<br />End: " + endCallNumber
+/*                     + "<br />Last checked: " + formatter.format(dayLastChecked)
+                     + "<br />Last shifted: " + formatter.format(dayLastShifted)
+                     + "<br />Last faced: "   + formatter.format(dayLastFaced)
+                     + "<br />Last dusted: "  + formatter.format(dayLastDusted)
+                     + "<br />Last read: "    + formatter.format(dayLastRead)*/
+                     + "</html>");
     }
 }

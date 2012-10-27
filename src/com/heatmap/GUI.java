@@ -1,5 +1,6 @@
 package com.heatmap;
 
+import org.jdesktop.swingx.JXComboBox;
 import org.jdesktop.swingx.JXDatePicker;
 
 import java.awt.*;
@@ -24,7 +25,7 @@ public class GUI extends JApplet implements MouseListener {
     private final ButtonGroup floorButtons = new ButtonGroup();
 
     /** Panel that contains the components for the shelf map. */
-    private JPanel floorComponents = addCoords(new JPanel(new GridBagLayout()), 1, 1);
+    private final JPanel floorComponents = addCoords(new JPanel(new GridBagLayout()), 1, 1);
 
     /** The Range currently clicked on to be edited by the user. */
     private Range focusedRange;
@@ -70,32 +71,30 @@ public class GUI extends JApplet implements MouseListener {
     private Floor currentFloor = null;
 
     /** A bit of text that displays a title for the program. */
-    private JLabel programTitle = addCoords(new JLabel("Stacks Cleanliness Heat Map"), 1, 0);
+    private final JLabel programTitle = addCoords(new JLabel("Stacks Cleanliness Heat Map"), 1, 0);
 
     /** Button which, when clicked, will change the colors of Ranges to indicate how many days it's
      * been since each Range has been checked. */
-    private JRadioButton viewDaysSinceChecked = addCoords(new JRadioButton("Checked"), 6, 2);
+    private final JRadioButton viewDaysSinceChecked = addCoords(new JRadioButton("Checked"), 6, 2);
 
     /** Button which, when clicked, will change the colors of Ranges to indicate how many days it's
      * been since each Range has been shifted. */
-    private JRadioButton viewDaysSinceShifted = addCoords(new JRadioButton("Shifted"), 6, 3);
+    private final JRadioButton viewDaysSinceShifted = addCoords(new JRadioButton("Shifted"), 6, 3);
 
     /** Button which, when clicked, will change the colors of Ranges to indicate how many days it's
      * been since each Range has been faced. */
-    private JRadioButton viewDaysSinceFaced = addCoords(new JRadioButton("Faced"), 6, 4);
+    private final JRadioButton viewDaysSinceFaced = addCoords(new JRadioButton("Faced"), 6, 4);
 
     /** Button which, when clicked, will change the colors of Ranges to indicate how many days it's
      * been since each Range has been dusted. */
-    private JRadioButton viewDaysSinceDusted = addCoords(new JRadioButton("Dusted"), 6, 5);
+    private final JRadioButton viewDaysSinceDusted = addCoords(new JRadioButton("Dusted"), 6, 5);
 
     /** Button which, when clicked, will change the colors of Ranges to indicate how many days it's
      * been since each Range has been shelf read. */
-    private JRadioButton viewDaysSinceRead = addCoords(new JRadioButton("Read"), 6, 6);
+    private final JRadioButton viewDaysSinceRead = addCoords(new JRadioButton("Read"), 6, 6);
 
     /** Button group to only allow viewing the properties of a single property of Ranges at a time. */
-    private ButtonGroup viewDaysSinceButtons = new ButtonGroup();
-
-    // TODO Replace the JRadioButtons with a single select button with multiple choices? Is simpler.
+    private final ButtonGroup viewDaysSinceButtons = new ButtonGroup();
 
     /** Attempt to initialize the GUI for this program. */
     @Override
@@ -164,6 +163,13 @@ public class GUI extends JApplet implements MouseListener {
         inputComponents.addAll(Arrays.asList(startCallNumber, endCallNumber,
                 dayLastChecked, dayLastShifted, dayLastFaced, dayLastDusted, dayLastRead));
 
+        // Add properties to each dayLastX component, to allow for easier programming.
+        dayLastChecked.putClientProperty("activity", "checked");
+        dayLastShifted.putClientProperty("activity", "shifted");
+        dayLastFaced.putClientProperty("activity", "faced");
+        dayLastDusted.putClientProperty("activity", "dusted");
+        dayLastRead.putClientProperty("activity", "read");
+
         for (JComponent component : inputComponents) {
             addComponent(component, g);
         }
@@ -213,8 +219,9 @@ public class GUI extends JApplet implements MouseListener {
                 fCConstraints.gridx = r.getXCoord();
                 fCConstraints.gridy = r.getYCoord();
                 r.addMouseListener(this);
-                floorComponents.add(r, fCConstraints);
                 r.updateColor(activityToDisplay.getText().toLowerCase());
+                r.updateTooltip();
+                floorComponents.add(r, fCConstraints);
             }
 
             floorComponents.revalidate();
@@ -268,23 +275,17 @@ public class GUI extends JApplet implements MouseListener {
             }
 
             // TODO Another chance for iteration.
-            focusedRange.setDayLast("checked", dayLastChecked.getDate());
-            focusedRange.setDayLast("shifted", dayLastShifted.getDate());
-            focusedRange.setDayLast("faced",   dayLastFaced.getDate());
-            focusedRange.setDayLast("dusted",  dayLastDusted.getDate());
-            focusedRange.setDayLast("read",   dayLastRead.getDate());
+            focusedRange.setDayLast((String) dayLastChecked.getClientProperty("activity"), dayLastChecked.getDate());
+            focusedRange.setDayLast((String) dayLastShifted.getClientProperty("activity"), dayLastShifted.getDate());
+            focusedRange.setDayLast((String) dayLastFaced.getClientProperty("activity"),   dayLastFaced.getDate());
+            focusedRange.setDayLast((String) dayLastDusted.getClientProperty("activity"),  dayLastDusted.getDate());
+            focusedRange.setDayLast((String) dayLastRead.getClientProperty("activity"),    dayLastRead.getDate());
 
             currentFloor.write();
             inputMode(false);
         }
 
         else if (clickedComponent == thirdFloor.getButton() || clickedComponent == fourthFloor.getButton()) {
-            // TODO Should be able to determine this by getting the object selected in the button group.
-            // TODO Or, by using if thirdFloor.getButton().isSelected()
-            if (thirdFloor.getButton().isSelected()) {
-                System.out.println(thirdFloor.getButton().getText());
-            }
-
             if (clickedComponent == thirdFloor.getButton()) {
                 currentFloor = thirdFloor;
             }
@@ -319,11 +320,11 @@ public class GUI extends JApplet implements MouseListener {
             // TODO Here's another chance to use iteration through a list of input components.
             startCallNumber.setText(r.getStart());
             endCallNumber.setText(r.getEnd());
-            dayLastChecked.setDate(r.getDayLast("checked"));
-            dayLastShifted.setDate(r.getDayLast("shifted"));
-            dayLastFaced.setDate(r.getDayLast("faced"));
-            dayLastDusted.setDate(r.getDayLast("dusted"));
-            dayLastRead.setDate(r.getDayLast("read"));
+            dayLastChecked.setDate(r.getDayLast((String) dayLastChecked.getClientProperty("activity")));
+            dayLastShifted.setDate(r.getDayLast((String) dayLastShifted.getClientProperty("activity")));
+            dayLastFaced.setDate(r.getDayLast((String) dayLastFaced.getClientProperty("activity")));
+            dayLastDusted.setDate(r.getDayLast((String) dayLastDusted.getClientProperty("activity")));
+            dayLastRead.setDate(r.getDayLast((String) dayLastRead.getClientProperty("activity")));
 
             r.updateColor("mousedover");
 
@@ -350,7 +351,7 @@ public class GUI extends JApplet implements MouseListener {
     }
 
     /** (Dis)Allow the user to input data for a selected Range. */
-    public void inputMode(Boolean b) {
+    private void inputMode(Boolean b) {
         if (b) {
             focusedRange.updateColor("clicked");
         }
@@ -358,7 +359,7 @@ public class GUI extends JApplet implements MouseListener {
             clearInput();
             // TODO Would be better to remove this conditional if possible.
             if (focusedRange != null) {
-                focusedRange.updateColor("none");
+                focusedRange.updateColor(getSelectedView().getText().toLowerCase());
             }
             focusedRange = null;
         }

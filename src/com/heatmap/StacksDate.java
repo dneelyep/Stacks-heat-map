@@ -9,7 +9,7 @@ import java.util.Date;
 public class StacksDate extends Date {
 
     /** A graphical component to change the Date stored in this StacksDate. */
-    private JXDatePicker datePicker;
+    private final JXDatePicker datePicker;
 
     /** Create this StacksDate along with the specified JXDatePicker picker. */
     public StacksDate(JXDatePicker picker) {

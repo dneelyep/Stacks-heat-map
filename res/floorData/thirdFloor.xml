@@ -27,11 +27,11 @@
         <y>8</y>
         <begin>AD205</begin>
         <end>AG1</end>
-        <checked />
-        <shifted />
-        <faced />
-        <dusted />
-        <read />
+        <checked>Oct 2, 2012</checked>
+        <shifted>Oct 2, 2012</shifted>
+        <faced>Oct 2, 2012</faced>
+        <dusted>Oct 2, 2012</dusted>
+        <read>Oct 2, 2012</read>
     </range>
     <range>
         <x>1</x>
@@ -423,7 +423,7 @@
         <y>16</y>
         <begin></begin>
         <end></end>
-        <checked />
+        <checked>Sep 13, 2012</checked>
         <shifted />
         <faced />
         <dusted />
@@ -500,11 +500,11 @@
         <y>24</y>
         <begin></begin>
         <end></end>
-        <checked />
-        <shifted />
-        <faced />
-        <dusted />
-        <read />
+        <checked>Oct 1, 2012</checked>
+        <shifted>Oct 1, 2012</shifted>
+        <faced>Oct 1, 2012</faced>
+        <dusted>Oct 1, 2012</dusted>
+        <read>Oct 1, 2012</read>
     </range>
     <range>
         <x>2</x>
@@ -764,7 +764,7 @@
         <y>6</y>
         <begin></begin>
         <end></end>
-        <checked />
+        <checked>Oct 2, 2012</checked>
         <shifted />
         <faced />
         <dusted />
@@ -984,7 +984,7 @@
         <y>2</y>
         <begin></begin>
         <end></end>
-        <checked />
+        <checked>Oct 1, 2012</checked>
         <shifted />
         <faced />
         <dusted />
@@ -1361,8 +1361,8 @@
         <checked />
         <shifted />
         <faced />
-        <dusted />
-        <read />
+        <dusted>Oct 2, 2012</dusted>
+        <read>Oct 2, 2012</read>
     </range>
     <range>
         <x>6</x>
@@ -1370,10 +1370,10 @@
         <begin></begin>
         <end></end>
         <checked />
-        <shifted />
-        <faced />
-        <dusted />
-        <read />
+        <shifted>Oct 1, 2012</shifted>
+        <faced>Oct 1, 2012</faced>
+        <dusted>Oct 1, 2012</dusted>
+        <read>Oct 1, 2012</read>
     </range>
     <range>
         <x>7</x>
@@ -1446,11 +1446,11 @@
         <y>6</y>
         <begin></begin>
         <end></end>
-        <checked />
-        <shifted />
-        <faced />
-        <dusted />
-        <read />
+        <checked>Oct 1, 2012</checked>
+        <shifted>Oct 1, 2012</shifted>
+        <faced>Oct 1, 2012</faced>
+        <dusted>Oct 1, 2012</dusted>
+        <read>Oct 1, 2012</read>
     </range>
     <range>
         <x>7</x>
@@ -1501,11 +1501,11 @@
         <y>11</y>
         <begin></begin>
         <end></end>
-        <checked />
-        <shifted />
-        <faced />
-        <dusted />
-        <read />
+        <checked>Oct 1, 2012</checked>
+        <shifted>Oct 1, 2012</shifted>
+        <faced>Oct 1, 2012</faced>
+        <dusted>Oct 1, 2012</dusted>
+        <read>Oct 1, 2012</read>
     </range>
     <range>
         <x>7</x>
@@ -1567,11 +1567,11 @@
         <y>18</y>
         <begin></begin>
         <end>HB100</end>
-        <checked />
-        <shifted />
-        <faced />
-        <dusted />
-        <read />
+        <checked>Oct 1, 2012</checked>
+        <shifted>Oct 1, 2012</shifted>
+        <faced>Oct 1, 2012</faced>
+        <dusted>Oct 1, 2012</dusted>
+        <read>Oct 1, 2012</read>
     </range>
     <range>
         <x>7</x>
@@ -1634,16 +1634,16 @@
         <begin></begin>
         <end></end>
         <checked />
-        <shifted />
-        <faced />
-        <dusted />
-        <read />
+        <shifted>Sep 7, 2012</shifted>
+        <faced>Sep 7, 2012</faced>
+        <dusted>Sep 3, 2012</dusted>
+        <read>Sep 6, 2012</read>
     </range>
     <range>
         <x>7</x>
         <y>26</y>
-        <begin>HG500</begin>
-        <end>HG530</end>
+        <begin>HG510</begin>
+        <end>HG540</end>
         <checked />
         <shifted />
         <faced />
@@ -1787,10 +1787,10 @@
         <y>39</y>
         <begin></begin>
         <end></end>
-        <checked />
-        <shifted />
-        <faced />
-        <dusted />
-        <read />
+        <checked>Oct 1, 2012</checked>
+        <shifted>Oct 5, 2012</shifted>
+        <faced>Oct 1, 2012</faced>
+        <dusted>Oct 1, 2012</dusted>
+        <read>Oct 1, 2012</read>
     </range>
 </floor>

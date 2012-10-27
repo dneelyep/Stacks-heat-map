@@ -6,15 +6,10 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 
 import javax.swing.JRadioButton;
 
-import nu.xom.Builder;
-import nu.xom.Document;
-import nu.xom.Element;
-import nu.xom.Elements;
-import nu.xom.ParsingException;
+import nu.xom.*;
 
 /** Class to represent a floor in the library. */
 public class Floor {
@@ -76,18 +71,35 @@ public class Floor {
                     programRange.setStart(e.getFirstChildElement("begin").getValue());
     				programRange.setEnd(e.getFirstChildElement("end").getValue());
 
-    				try {
-    					DateFormat formatter = DateFormat.getDateInstance();
+                    // TODO This is very ugly, clean it up.
+                    DateFormat formatter = DateFormat.getDateInstance();
+                    try {
                         programRange.setDayLast("checked", formatter.parse(e.getFirstChildElement("checked").getValue()));
-                        programRange.setDayLast("shifted", formatter.parse(e.getFirstChildElement("shifted").getValue()));
-                        programRange.setDayLast("faced",   formatter.parse(e.getFirstChildElement("faced").getValue()));
-                        programRange.setDayLast("dusted",  formatter.parse(e.getFirstChildElement("dusted").getValue()));
-                        programRange.setDayLast("read",    formatter.parse(e.getFirstChildElement("read").getValue()));
-                    }
-    				catch (ParseException p) {
-    					System.out.println("Error parsing Date:" + p);
+                    } catch (ParseException p) {
+    					System.out.println("Error parsing Date checked:" + p);
     				}
-    			}
+                    try {
+                        programRange.setDayLast("shifted", formatter.parse(e.getFirstChildElement("shifted").getValue()));
+                    } catch (ParseException p) {
+                        System.out.println("Error parsing Date shifted:" + p);
+                    }
+                    try {
+                        programRange.setDayLast("faced",   formatter.parse(e.getFirstChildElement("faced").getValue()));
+                    } catch (ParseException p) {
+                        System.out.println("Error parsing Date faced:  " + p);
+                    }
+                    try {
+                        programRange.setDayLast("dusted",  formatter.parse(e.getFirstChildElement("dusted").getValue()));
+                    } catch (ParseException p) {
+                        System.out.println("Error parsing Date dusted: " + p);
+                    }
+
+                    try {
+                        programRange.setDayLast("read",    formatter.parse(e.getFirstChildElement("read").getValue()));
+                    } catch (ParseException p) {
+                        System.out.println("Error parsing Date read:   " + p);
+                    }
+                }
     		}
         	catch (ParsingException e) {
         		System.err.println("Error parsing this Floor's XML file.");
@@ -116,10 +128,11 @@ public class Floor {
 			Elements fileRangeChildren = fileRange.getChildElements();
 			
 			// Get rid of current <range> children in the file.
+            // TODO Rather than remove elements, how about just replacing them with new ones?
 			for (int j = 0; j < fileRangeChildren.size(); j++) {
 				fileRangeChildren.get(j).removeChildren();
 			}
-			
+
 			// Replace each range's attributes in the file with each object's attributes.
 			fileRangeChildren.get(0).appendChild(Integer.toString(programRange.getXCoord()));
 			fileRangeChildren.get(1).appendChild(Integer.toString(programRange.getYCoord()));
