@@ -1,9 +1,10 @@
 package com.heatmap;
 
-import org.jdesktop.swingx.JXComboBox;
 import org.jdesktop.swingx.JXDatePicker;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.*;
@@ -14,7 +15,6 @@ import javax.swing.*;
  *
  * @author Daniel Neel */
 public class GUI extends JApplet implements MouseListener {
-    // TODO Add a Quit button to the GUI?
     /** Floor that represents the library's third floor. */
     private final Floor thirdFloor = new Floor(3);
 
@@ -25,6 +25,7 @@ public class GUI extends JApplet implements MouseListener {
     private final ButtonGroup floorButtons = new ButtonGroup();
 
     /** Panel that contains the components for the shelf map. */
+    // TODO Look into breaking floorComponents and its Ranges into a separate class.
     private final JPanel floorComponents = addCoords(new JPanel(new GridBagLayout()), 1, 1);
 
     /** The Range currently clicked on to be edited by the user. */
@@ -60,12 +61,15 @@ public class GUI extends JApplet implements MouseListener {
     /** Button to cancel editing of a Range's information. */
     private final JButton cancel = addCoords(new JButton("Cancel"), 6, 0);
 
+    /** Button to allow the user to close the application. */
+    private final JButton quit = addCoords(new JButton("Quit"), 6, 38);
+
     // TODO Consider associating associating a with each Date last X a GUI component. Cleaner potentially.
     /** The collection of input components, gathered together for easy iteration. */
     private final Set<JComponent> inputComponents = new LinkedHashSet<JComponent>();
 
     /** Constraints used to place components in floorComponents. */
-    private GridBagConstraints fCConstraints;
+    private GridBagConstraints fCConstraints = new GridBagConstraints();
 
     /** The Floor currently being viewed by the user. */
     private Floor currentFloor = null;
@@ -96,6 +100,21 @@ public class GUI extends JApplet implements MouseListener {
     /** Button group to only allow viewing the properties of a single property of Ranges at a time. */
     private final ButtonGroup viewDaysSinceButtons = new ButtonGroup();
 
+    /** The primary menu bar for this application. */
+    private final JMenuBar menuBar = new JMenuBar();
+
+    /** The File menu located inside the program's menu bar. */
+    private final JMenu menu = new JMenu("File");
+
+    /** The menu entry that allows users to change preferences. */
+    private final JMenuItem menuPreferences = new JMenuItem("Preferences");
+
+    /** The menu entry that allows users to quit the program. */
+    private final JMenuItem menuQuit = new JMenuItem("Quit");
+
+    /** The menu popup that allows users to change preferences. */
+    private PreferencesFrame preferencesFrame = new PreferencesFrame("Preferences");
+
     /** Attempt to initialize the GUI for this program. */
     @Override
     public void init() {
@@ -111,6 +130,7 @@ public class GUI extends JApplet implements MouseListener {
     }
 
     /** Set up the GUI used for the program.*/
+    // TODO Make an options menu, with the ability to change the dates used to determine when a range is good/bad/ok.
     private void createGUI() {
         // Use the system's default look and feel.
         try {
@@ -119,6 +139,31 @@ public class GUI extends JApplet implements MouseListener {
         catch (Exception e) {
             System.out.println("Exception: " + e);
         }
+
+        // TODO Use Actions for the menuQuit button?
+        // Set up the program's menu bars.
+        menuPreferences.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                preferencesFrame.setVisible(true);
+            }
+        });
+
+        // TODO Use an action for menuQuit and quit, since they do the same thing?
+        menuQuit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+
+        menu.add(menuPreferences);
+        menuPreferences.setMnemonic('P');
+        menu.add(menuQuit);
+        menuQuit.setMnemonic('Q');
+        menu.setMnemonic('F');
+        menuBar.add(menu);
+        setJMenuBar(menuBar);
 
         // Set the applet's window dimensions to the size of the user's screen.
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -146,6 +191,8 @@ public class GUI extends JApplet implements MouseListener {
         g.weighty = 1;
         add(floorComponents, g);
 
+        fCConstraints.insets = new Insets(0, 6, 0, 6);
+
         g.weighty = 0;
         g.gridheight = 1;
         addComponent(addCoords(new JLabel("Start: "), 2, 0), g);
@@ -163,6 +210,8 @@ public class GUI extends JApplet implements MouseListener {
         inputComponents.addAll(Arrays.asList(startCallNumber, endCallNumber,
                 dayLastChecked, dayLastShifted, dayLastFaced, dayLastDusted, dayLastRead));
 
+        // TODO Review, replace any unneeded object arrays with uses of for (Object o : Arrays.asList(objects)).
+
         // Add properties to each dayLastX component, to allow for easier programming.
         dayLastChecked.putClientProperty("activity", "checked");
         dayLastShifted.putClientProperty("activity", "shifted");
@@ -174,8 +223,22 @@ public class GUI extends JApplet implements MouseListener {
             addComponent(component, g);
         }
 
-        cancel.addMouseListener(this);
+        cancel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                inputMode(false);
+            }
+        });
+
         addComponent(cancel, g);
+
+        quit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+        addComponent(quit, g);
 
         submitData.addMouseListener(this);
         submitData.setEnabled(false);
@@ -192,21 +255,24 @@ public class GUI extends JApplet implements MouseListener {
 
         for (Enumeration<AbstractButton> buttons = viewDaysSinceButtons.getElements(); buttons.hasMoreElements();) {
             JRadioButton currentButton = (JRadioButton) buttons.nextElement();
-            currentButton.addMouseListener(this);
+            currentButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    currentFloor.updateRangeColors(getSelectedView().getText().toLowerCase());
+                }
+            });
+
             addComponent(currentButton, g);
         }
 
-        fCConstraints = new GridBagConstraints();
-        fCConstraints.insets = new Insets(0, 6, 0, 6);
-
         allowInput(false);
         currentFloor = thirdFloor;
-        displayFloor(currentFloor, viewDaysSinceChecked);
+        displayFloor(currentFloor);
     }
 
     /** Display a given Floor floor's Ranges on this GUI, coloring
-     * them according to the Dates in the activityToDisplay. */
-     private void displayFloor(Floor floor, JRadioButton activityToDisplay) {
+     * them according to the activity that is currently selected in the GUI. */
+     private void displayFloor(Floor floor) {
         // TODO Add a check to make sure the floor is not focused. Or
         // alternatively, disable 3rd/4th floor buttons when we enter focus. See inputmode.
         if (floor != thirdFloor && floor != fourthFloor) {
@@ -214,12 +280,12 @@ public class GUI extends JApplet implements MouseListener {
         }
         else {
             floorComponents.removeAll();
+            floor.updateRangeColors(getSelectedView().getText().toLowerCase());
 
             for (Range r : floor.getRanges()) {
                 fCConstraints.gridx = r.getXCoord();
                 fCConstraints.gridy = r.getYCoord();
                 r.addMouseListener(this);
-                r.updateColor(activityToDisplay.getText().toLowerCase());
                 r.updateTooltip();
                 floorComponents.add(r, fCConstraints);
             }
@@ -261,10 +327,6 @@ public class GUI extends JApplet implements MouseListener {
             inputMode(true);
         }
 
-        else if (clickedComponent == cancel) {
-            inputMode(false);
-        }
-
         // TODO Fix how submit/cancel text disappear when not focused.
         else if (clickedComponent == submitData && submitData.isEnabled()) {
             if (!startCallNumber.getText().isEmpty()) {
@@ -294,12 +356,8 @@ public class GUI extends JApplet implements MouseListener {
             }
 
             inputMode(false);
-            displayFloor(currentFloor, (JRadioButton) getSelectedView());
+            displayFloor(currentFloor);
             currentFloor.write();
-        }
-
-        else if (clickedComponent instanceof JRadioButton) {
-            displayFloor(currentFloor, (JRadioButton) clickedComponent);
         }
     }
 

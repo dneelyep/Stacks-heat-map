@@ -73,6 +73,8 @@ public class Floor {
 
                     // TODO This is very ugly, clean it up.
                     DateFormat formatter = DateFormat.getDateInstance();
+                    // TODO Since the problem is that we're reading an unparseable (empty)
+                    // date, we need to handle that somehow. Set the date to a safe value?
                     try {
                         programRange.setDayLast("checked", formatter.parse(e.getFirstChildElement("checked").getValue()));
                     } catch (ParseException p) {
@@ -173,6 +175,14 @@ public class Floor {
     /** Get this Floor's button. */
     public JRadioButton getButton() {
     	return button;
+    }
+
+    /** Update the colors of every Range located on this Floor according
+     * to activity. */
+    public void updateRangeColors(String activity) {
+        for (Range r : ranges) {
+            r.updateColor(activity);
+        }
     }
 }
 

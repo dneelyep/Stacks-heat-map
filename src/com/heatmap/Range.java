@@ -2,21 +2,25 @@ package com.heatmap;
 
 import java.awt.Color;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 
 import javax.swing.*;
-import javax.swing.text.DateFormatter;
 
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 
 /** Class to represent a single range of books in the library. */
 public class Range extends JLabel {
+
+    /** String that holds the base path for all images accessed in this Range. */
+    private final String IMGROOT = "C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/";
+
 	/** The first call number in this Range. */
 	private String startCallNumber;
-	
+
 	/** The last call number in this Range. */
 	private String endCallNumber;
 
@@ -37,6 +41,7 @@ public class Range extends JLabel {
     private Date dayLastRead;
 
     /** A Map of all the Date properties that belong to this Range. */
+    // TODO Remove all of the dayLastRead/etc fields, and just replace them with this HashMap?
     private final LinkedHashMap<String, Date> dateProperties = new LinkedHashMap<String, Date>(5);
 
     /** This Range's x-coordinate in the GUI. */
@@ -133,22 +138,22 @@ public class Range extends JLabel {
             setForeground(Color.BLUE);
             // TODO Find a more graceful way of handling paths. EG relative
             // paths, or just replace the end of the path name.
-            setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/selectedRange.png"));
+            setIcon(new ImageIcon(IMGROOT + "selectedRange.png"));
         }
         else if (action.equals("mousedover")) {
             setForeground(Color.CYAN);
-            setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/mousedOverRange.png"));
+            setIcon(new ImageIcon(IMGROOT + "mousedOverRange.png"));
         }
         // TODO What's the deal with making sure the action is not "none"?
         else {
             if (getDaysSince(action) < 15) {
-                setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/goodRange.png"));
+                setIcon(new ImageIcon(IMGROOT + "goodRange.png"));
             }
             else if (getDaysSince(action) >= 15 && getDaysSince(action) < 30) {
-                setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/decentRange.png"));
+                setIcon(new ImageIcon(IMGROOT + "decentRange.png"));
             }
             else {
-                setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/badRange.png"));
+                setIcon(new ImageIcon(IMGROOT + "badRange.png"));
             }
         }
 	}

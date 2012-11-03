@@ -962,8 +962,8 @@
         <y>0</y>
         <begin></begin>
         <end></end>
-        <checked />
-        <shifted />
+        <checked>Oct 1, 2012</checked>
+        <shifted>Oct 12, 2012</shifted>
         <faced />
         <dusted />
         <read />
@@ -1380,8 +1380,8 @@
         <y>0</y>
         <begin></begin>
         <end></end>
-        <checked />
-        <shifted />
+        <checked>Oct 2, 2012</checked>
+        <shifted>Oct 11, 2012</shifted>
         <faced />
         <dusted />
         <read />
@@ -1534,7 +1534,7 @@
         <y>15</y>
         <begin></begin>
         <end></end>
-        <checked />
+        <checked>Oct 2, 2012</checked>
         <shifted />
         <faced />
         <dusted />
