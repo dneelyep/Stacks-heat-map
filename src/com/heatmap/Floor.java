@@ -29,9 +29,13 @@ public class Floor {
 	
 	/** Radio button used to display this Floor in the GUI. */
 	private JRadioButton button;
+
+    /** The GUI that holds this Floor. */
+    private GUI parentGUI;
 	
 	/** Create a new Floor using floorNumber to determine layout. */
-	public Floor(int floorNumber) {	
+	public Floor(int floorNumber, GUI gui) {
+        parentGUI = gui;
 		makeFloor(floorNumber);
 	}
 
@@ -65,7 +69,7 @@ public class Floor {
     				Element e = rangeElements.get(i);
     				String fileX = e.getFirstChildElement("x").getValue();
     				String fileY = e.getFirstChildElement("y").getValue();
-    				ranges.add(new Range(Integer.parseInt(fileX), Integer.parseInt(fileY)));
+    				ranges.add(new Range(Integer.parseInt(fileX), Integer.parseInt(fileY), parentGUI));
 
                     Range programRange = ranges.get(i);
                     programRange.setStart(e.getFirstChildElement("begin").getValue());

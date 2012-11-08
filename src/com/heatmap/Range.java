@@ -1,8 +1,8 @@
 package com.heatmap;
 
 import java.awt.Color;
-import java.text.DateFormat;
-import java.util.ArrayList;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -13,7 +13,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Days;
 
 /** Class to represent a single range of books in the library. */
-public class Range extends JLabel {
+public class Range extends JLabel implements MouseListener {
 
     /** String that holds the base path for all images accessed in this Range. */
     private final String IMGROOT = "C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/";
@@ -24,6 +24,7 @@ public class Range extends JLabel {
 	/** The last call number in this Range. */
 	private String endCallNumber;
 
+    // TODO Get rid of these individual Date fields, since I can just use a HashMap instead?
 	/** The day this Range was last checked for cleanliness. */
 	private Date dayLastChecked;
 
@@ -36,7 +37,7 @@ public class Range extends JLabel {
     /** The day this Range was last dusted. */
     private Date dayLastDusted;
 
-    // TODO Convert Dates to StackDates.
+    // TODO Convert Dates to StackDates, that aside from a Date have a JXDatePicker to manipulate their value.
     /** The day this Range was last shelf read. */
     private Date dayLastRead;
 
@@ -50,8 +51,11 @@ public class Range extends JLabel {
 	/** This Range's y-coordinate in the GUI. */
 	private final int YCOORD;
 
+    /** The GUI that this Range is contained in. */
+    private GUI parentGUI;
+
 	/** Create a new Range with the given x-coordinate x and y-coordinate y. */
-	public Range(int x, int y) {
+	public Range(int x, int y, GUI gui) {
 		XCOORD = x;
 		YCOORD = y;
         setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/defaultRange.png"));
@@ -60,7 +64,9 @@ public class Range extends JLabel {
         dateProperties.put("faced", dayLastFaced);
         dateProperties.put("dusted", dayLastDusted);
         dateProperties.put("read", dayLastRead);
+        addMouseListener(this);
         updateTooltip();
+        parentGUI = gui;
     }
 	
 	/** Get this Range's x-coordinate. */
@@ -173,8 +179,61 @@ public class Range extends JLabel {
 /*                     + "<br />Last checked: " + formatter.format(dayLastChecked)
                      + "<br />Last shifted: " + formatter.format(dayLastShifted)
                      + "<br />Last faced: "   + formatter.format(dayLastFaced)
-                     + "<br />Last dusted: "  + formatter.format(dayLastDusted)
+                     + "<br />Last dusted: "  + fonrmatter.format(dayLastDusted)
                      + "<br />Last read: "    + formatter.format(dayLastRead)*/
                      + "</html>");
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        // TODO This whole focusedRange abstraction is weak, confusing.
+        // Select the clicked-on Range for editing.
+        if (parentGUI.getFocusedRange() == null) {
+            parentGUI.setFocusedRange(this);
+            parentGUI.setInputMode(true);
+        }
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {}
+
+    @Override
+    public void mouseReleased(MouseEvent e) {}
+
+    // TODO Consider using a MouseMotionListener.
+    /** Update the GUI components that display information about the
+     * currently moused-over Range. */
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        // LEFTOFFHERE In the process of transferring the code for mouseEntered from GUI over to Range. Afterwards, try to get rid of more of the manual action/mouse event handling code in GUI.
+        // TODO Try to find a more natural way than focusedRange == null to express whether or not a Range is focused.
+        if (parentGUI.getFocusedRange() == null) {
+            // TODO Here's another chance to use iteration through a list of input components.
+
+            // Here's current progress on what I should be shooting for.
+            // TODO Make this a method of the startCallNumber text field in the gui?
+            parentGUI.getStartCallNumber().setText(startCallNumber);
+            parentGUI.getEndCallNumber().setText(endCallNumber);
+
+            // TODO Why does dayLastX have a separate graphical representation stored in GUI? Why not store that graphical
+            //      representation in the dayLastX object?
+            parentGUI.getDayLastChecked().setDate(dateProperties.get("checked"));
+            parentGUI.getDayLastShifted().setDate(dateProperties.get("shifted"));
+            parentGUI.getDayLastFaced().setDate(dateProperties.get("faced"));
+            parentGUI.getDayLastDusted().setDate(dateProperties.get("dusted"));
+            parentGUI.getDayLastRead().setDate(dateProperties.get("read"));
+            updateColor("mousedover");
+
+            // TODO Try to have the date picker display text in a more human-readable format.
+            // TODO Implement holding Control to select multiple ranges at once.
+        }
+    }
+
+    /** Actions to undertake when the mouse exits from a given Range. */
+    @Override
+    public void mouseExited(MouseEvent e) {
+        if (parentGUI.getFocusedRange() == null) {
+            updateColor(parentGUI.getSelectedView().getText().toLowerCase());
+        }
     }
 }

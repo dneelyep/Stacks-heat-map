@@ -5,8 +5,6 @@ import org.jdesktop.swingx.JXDatePicker;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.*;
 
 import javax.swing.*;
@@ -14,12 +12,12 @@ import javax.swing.*;
 /** GUI.java - Class that holds the primary GUI for the program.
  *
  * @author Daniel Neel */
-public class GUI extends JApplet implements MouseListener {
+public class GUI extends JApplet {
     /** Floor that represents the library's third floor. */
-    private final Floor thirdFloor = new Floor(3);
+    private final Floor thirdFloor = new Floor(3, this);
 
     /** Floor that represents the library's fourth floor. */
-    private final Floor fourthFloor = new Floor(4);
+    private final Floor fourthFloor = new Floor(4, this);
     
     /** The group that radio buttons for each Floor belongs to. */
     private final ButtonGroup floorButtons = new ButtonGroup();
@@ -41,6 +39,7 @@ public class GUI extends JApplet implements MouseListener {
     // TODO Use input verification on the text fields to ensure values are appropriate.
     //      See http://docs.oracle.com/javase/tutorial/uiswing/misc/focus.html#inputVerification
     // TODO Add some checking to make sure the user can't add dates from the future. See my future getDaysSince method.
+    // TODO Actually, I can just use datePicker.getMonthView().setLower/UpperBound();
     private final JXDatePicker dayLastChecked = addCoords(new JXDatePicker(), 3, 2);
 
     /** Date picker to change the Date the clicked Range was last shifted. */
@@ -113,7 +112,7 @@ public class GUI extends JApplet implements MouseListener {
     private final JMenuItem menuQuit = new JMenuItem("Quit");
 
     /** The menu popup that allows users to change preferences. */
-    private PreferencesFrame preferencesFrame = new PreferencesFrame("Preferences");
+    private PreferencesFrame preferencesFrame = new PreferencesFrame();
 
     /** Attempt to initialize the GUI for this program. */
     @Override
@@ -140,7 +139,6 @@ public class GUI extends JApplet implements MouseListener {
             System.out.println("Exception: " + e);
         }
 
-        // TODO Use Actions for the menuQuit button?
         // Set up the program's menu bars.
         menuPreferences.addActionListener(new ActionListener() {
             @Override
@@ -176,8 +174,8 @@ public class GUI extends JApplet implements MouseListener {
 
         addComponent(programTitle, g);
 
-        thirdFloor.getButton().addMouseListener(this);
-        fourthFloor.getButton().addMouseListener(this);
+        //thirdFloor.getButton().addMouseListener(this);
+        //fourthFloor.getButton().addMouseListener(this);
 
         thirdFloor.getButton().setSelected(true);
         floorButtons.add(thirdFloor.getButton());
@@ -226,7 +224,7 @@ public class GUI extends JApplet implements MouseListener {
         cancel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                inputMode(false);
+                setInputMode(false);
             }
         });
 
@@ -240,7 +238,8 @@ public class GUI extends JApplet implements MouseListener {
         });
         addComponent(quit, g);
 
-        submitData.addMouseListener(this);
+        // TODO Search for these addMouseListeners and reenable if/when needed.
+        //submitData.addMouseListener(this);
         submitData.setEnabled(false);
         addComponent(submitData, g);
 
@@ -253,6 +252,7 @@ public class GUI extends JApplet implements MouseListener {
         viewDaysSinceButtons.add(viewDaysSinceDusted);
         viewDaysSinceButtons.add(viewDaysSinceRead);
 
+        // TODO Look into adding a ChangeListener to the viewDaysSince ButtonGroup rather than an ActionListener.
         for (Enumeration<AbstractButton> buttons = viewDaysSinceButtons.getElements(); buttons.hasMoreElements();) {
             JRadioButton currentButton = (JRadioButton) buttons.nextElement();
             currentButton.addActionListener(new ActionListener() {
@@ -285,7 +285,7 @@ public class GUI extends JApplet implements MouseListener {
             for (Range r : floor.getRanges()) {
                 fCConstraints.gridx = r.getXCoord();
                 fCConstraints.gridy = r.getYCoord();
-                r.addMouseListener(this);
+                //r.addMouseListener(this);
                 r.updateTooltip();
                 floorComponents.add(r, fCConstraints);
             }
@@ -317,18 +317,12 @@ public class GUI extends JApplet implements MouseListener {
     }
 
     /** Allow the user to change the clicked Range on the viewed Floor's properties. */
-    @Override
+    /*@Override
     public void mouseClicked(MouseEvent e) {
         Component clickedComponent = e.getComponent();
 
-        // Select the clicked-on Range for editing.
-        if (clickedComponent instanceof Range && focusedRange == null) {
-            focusedRange = (Range) clickedComponent;
-            inputMode(true);
-        }
-
         // TODO Fix how submit/cancel text disappear when not focused.
-        else if (clickedComponent == submitData && submitData.isEnabled()) {
+        if (clickedComponent == submitData && submitData.isEnabled()) {
             if (!startCallNumber.getText().isEmpty()) {
                 focusedRange.setStart(startCallNumber.getText());
             }
@@ -344,7 +338,7 @@ public class GUI extends JApplet implements MouseListener {
             focusedRange.setDayLast((String) dayLastRead.getClientProperty("activity"),    dayLastRead.getDate());
 
             currentFloor.write();
-            inputMode(false);
+            setInputMode(false);
         }
 
         else if (clickedComponent == thirdFloor.getButton() || clickedComponent == fourthFloor.getButton()) {
@@ -355,11 +349,11 @@ public class GUI extends JApplet implements MouseListener {
                 currentFloor = fourthFloor;
             }
 
-            inputMode(false);
+            setInputMode(false);
             displayFloor(currentFloor);
             currentFloor.write();
         }
-    }
+    }*/
 
     /** Add a given JComponent component to the GUI. */
     private <T extends JComponent> void addComponent(T component, GridBagConstraints constraints) {
@@ -368,48 +362,8 @@ public class GUI extends JApplet implements MouseListener {
         add(component, constraints);
     }
 
-    /** Update the GUI components that display information about the
-     * currently moused-over Range. */
-    @Override
-    public void mouseEntered(MouseEvent e) {
-        // TODO Try to find a more natural way than focusedRange == null to express whether or not a Range is focused.
-        if (focusedRange == null && e.getComponent() instanceof Range) {
-            Range r = (Range) e.getSource();
-            // TODO Here's another chance to use iteration through a list of input components.
-            startCallNumber.setText(r.getStart());
-            endCallNumber.setText(r.getEnd());
-            dayLastChecked.setDate(r.getDayLast((String) dayLastChecked.getClientProperty("activity")));
-            dayLastShifted.setDate(r.getDayLast((String) dayLastShifted.getClientProperty("activity")));
-            dayLastFaced.setDate(r.getDayLast((String) dayLastFaced.getClientProperty("activity")));
-            dayLastDusted.setDate(r.getDayLast((String) dayLastDusted.getClientProperty("activity")));
-            dayLastRead.setDate(r.getDayLast((String) dayLastRead.getClientProperty("activity")));
-
-            r.updateColor("mousedover");
-
-            // TODO Try to have the date picker display text in a more human-readable format.
-            // TODO Implement holding Control to select multiple ranges at once.
-        }
-    }
-
-    /** Actions to undertake when the mouse exits from a given Range. */
-    @Override
-    public void mouseExited(MouseEvent e) {
-    	if (focusedRange == null && e.getComponent() instanceof Range) {
-    		Range r = (Range) e.getSource();
-            r.updateColor(getSelectedView().getText().toLowerCase());
-    	}
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-    }
-
     /** (Dis)Allow the user to input data for a selected Range. */
-    private void inputMode(Boolean b) {
+    protected void setInputMode(Boolean b) {
         if (b) {
             focusedRange.updateColor("clicked");
         }
@@ -433,7 +387,7 @@ public class GUI extends JApplet implements MouseListener {
     }
 
     /** Get the Button that represents the activity that is currently displayed in the GUI. */
-    private AbstractButton getSelectedView() {
+    protected AbstractButton getSelectedView() {
         for (Enumeration<AbstractButton> buttons = viewDaysSinceButtons.getElements(); buttons.hasMoreElements();) {
             AbstractButton currentButton = buttons.nextElement();
             if (currentButton.isSelected()) {
@@ -443,5 +397,56 @@ public class GUI extends JApplet implements MouseListener {
 
         // TODO This is a horrible way of handling when no button is selected. Fix it.
         return new JButton("Error!");
+    }
+
+    /** Get the Range currently focused on in this GUI. */
+    public Range getFocusedRange() {
+        return focusedRange;
+    }
+
+    /** Set the focusedRange in this GUI to a
+     * new Range r. */
+    public void setFocusedRange(Range r) {
+        focusedRange = r;
+    }
+
+    /** Returns the start call number input text field. */
+    public JTextField getStartCallNumber() {
+        return startCallNumber;
+    }
+
+    /** Returns the start call number input text field. */
+    public JTextField getEndCallNumber() {
+        return endCallNumber;
+    }
+
+    /** Get the input picker that allows you to change the day
+     * a Range was last checked for cleanliness. */
+    public JXDatePicker getDayLastChecked() {
+        return dayLastChecked;
+    }
+
+    /** Get the input picker that allows you to change the day
+     * a Range was last checked shifted. */
+    public JXDatePicker getDayLastShifted() {
+        return dayLastShifted;
+    }
+
+    /** Get the input picker that allows you to change the day
+     * a Range was last faced. */
+    public JXDatePicker getDayLastFaced() {
+        return dayLastFaced;
+    }
+
+    /** Get the input picker that allows you to change the day
+     * a Range was last dusted. */
+    public JXDatePicker getDayLastDusted() {
+        return dayLastDusted;
+    }
+
+    /** Get the input picker that allows you to change the day
+     * a Range was last shelf read. */
+    public JXDatePicker getDayLastRead() {
+        return dayLastRead;
     }
 }

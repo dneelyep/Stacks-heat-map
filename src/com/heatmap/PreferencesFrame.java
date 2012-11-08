@@ -1,105 +1,118 @@
 package com.heatmap;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.Properties;
+import java.util.Vector;
+import java.util.prefs.Preferences;
 
 /** Class to represent user preferences in the stacks
  * heat map program. */
 public class PreferencesFrame extends JFrame {
 
     /** ComboBox to change preferences for the task selected in the ComboBox. */
-    JComboBox<String> preferredTask;
+    JComboBox<String> preferredTask = new JComboBox<String>(new Vector<String>(Arrays.asList("Checked", "Shifted", "Faced", "Dusted", "Read")));
 
-    // TODO Better names for these text fields.
-    /** Text field that holds the number of days considered
+    // TODO Better names for these sliders.
+    // TODO Change the JTextFields to JSliders. More intuitive for the user.
+    /** Slider that allows the user to change the number of days considered
      * good since the current task has been completed. */
-    private JTextField daysGood = new JTextField(3);
+     private JSlider daysGood = new JSlider();
 
-    /** Text field that holds the number of days considered
-     * OK (passable) since the current task has been completed. */
-    private JTextField daysOK = new JTextField(3);
-
-    /** Text field that holds the number of days considered
+    /** Slider that allows the user to change the number of days considered
      * bad since the current task has been completed. */
-    private JTextField daysBad = new JTextField(3);
+    private JSlider daysBad = new JSlider();
+
+    /** Label to display the current value of the good slider. */
+    private JLabel goodLabel = new JLabel("Good:");
+
+    /** Label to display the current value of the bad slider. */
+    private JLabel badLabel = new JLabel("Bad:");
 
     /** Button that, upon click, saves any modified preferences for the user. */
-    // TODO Grey out/disable apply when changes have not yet been made to a field.
     private JButton applyPreferences = new JButton("Apply");
 
-    /** Representation of the properties associated with the user's preferences. */
-    private Properties preferenceProps = new Properties();
+    /** Set of custom preferences that this user has saved. */
+    private Preferences preferences = Preferences.userNodeForPackage(getClass());
 
-    /** Button to cancel any changes in preferences currently entered. */
-    private JButton cancel = new JButton("Cancel");
+    /** Button to close out the this PreferencesFrame. */
+    private JButton close = new JButton("Close");
 
     // TODO Look into converting this class into a Singleton, since I only need one instance of it in the program.
     /** Create a new PreferencesFrame with the given
      * title. Add to the frame various components to allow
      * the user to change the amount of days considered acceptable
      * between task completion. */
-    public PreferencesFrame(String title) {
-        super(title);
-        setLayout(new GridLayout(5, 2));
+    public PreferencesFrame() {
+        super("Preferences");
+        setLayout(new GridLayout(4, 2));
 
-        // Load in preferences for the user. TODO Make this a method?
-        try {
-            FileInputStream in = new FileInputStream("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/src/com/heatmap/preferences");
-            preferenceProps.load(in);
-            in.close();
-        } catch (FileNotFoundException e) {
-            System.out.println(e);
-        } catch (IOException e) {
-            System.out.println(e);
-        }
-
-        // create application properties with default
-        Properties applicationProps = new Properties(preferenceProps);
-        applicationProps.list(System.out);
-
-        String[] taskStrings = {"Checked", "Shifted", "Faced", "Dusted", "Read"};
-        // TODO Move preferredTask to a field.
-        preferredTask = new JComboBox<String>(taskStrings);
-        // TODO Convert the relevant fields to class members here.
+        // TODO Review use of listeners, see if I can make use of more appropriate types. See docs at http://docs.oracle.com/javase/tutorial/uiswing/events/handling.html
         add(new JLabel("# days since:"));
         add(preferredTask);
 
-        // TODO Add validation to make sure JTextField values are integers.
-        add(new JLabel("Good:"));
+        for (JSlider slider : Arrays.asList(daysGood, daysBad)) {
+            slider.setMajorTickSpacing(10);
+            slider.setMinorTickSpacing(5);
+            slider.setPaintTicks(true);
+            slider.setPaintLabels(true);
+            // TODO Have the slider automatically snap while moving the slider, rather than only after releasing mouse.
+            slider.setSnapToTicks(true);
+        }
+
+        add(goodLabel);
+
+        daysGood.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider) e.getSource();
+                goodLabel.setText("Good: " + source.getValue());
+                applyPreferences.setEnabled(true);
+            }
+        });
+        // TODO Here again I should be grabbing a default value rather than hard-coding 0.
+        daysGood.setValue(preferences.getInt("checked.good", 0));
+
         add(daysGood);
-        add(new JLabel("OK:"));
-        add(daysOK);
-        add(new JLabel("Bad:"));
+        add(badLabel);
+
+        daysBad.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider) e.getSource();
+                badLabel.setText("Bad: " + source.getValue());
+                applyPreferences.setEnabled(true);
+            }
+        });
+        daysBad.setValue(preferences.getInt("checked.bad", 0));
         add(daysBad);
 
-        // Set actions to perform upon Cancel/Apply clicking.
+        // Set actions to perform upon Apply/Close clicking.
         applyPreferences.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences();
+                applyPreferences.setEnabled(false);
             }
         });
 
-        cancel.addActionListener(new ActionListener() {
+        close.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 setVisible(false);
             }
         });
 
+        applyPreferences.setEnabled(false);
         add(applyPreferences);
-        add(cancel);
-        // TODO Add a Cancel button to let the user not save any changes they make?
+        add(close);
+
+        // TODO Disallow invalid daysGood/Bad values. For example, days considered good should always be < daysBad.
         // TODO Make screen size values variables I can access?
-        // TODO Move some of this setup into the constructor?
         // TODO Disallow input into the main GUI when the preferences dialog appears. See the modality API?
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setLocation((int) screenSize.getWidth() / 2, (int) screenSize.getHeight() / 2);
@@ -107,39 +120,20 @@ public class PreferencesFrame extends JFrame {
         pack();
     }
 
-    /** Save all user preferences to disk. */
+    // TODO Rename, implement method since the previous method was to write stuff to disk.
+    /** Save user preferences for the currently focused activity. */
     public void savePreferences() {
-        for (JTextField textInput : Arrays.asList(daysGood, daysBad)) {
-            // Make sure the input is an integer, and set appropriate properties.
-            try {
-                Integer.parseInt(textInput.getText());
-                preferenceProps.setProperty(preferredTask.getSelectedItem().toString().toLowerCase() + ".good", daysGood.getText());
-                preferenceProps.setProperty(preferredTask.getSelectedItem().toString().toLowerCase() + ".bad", daysBad.getText());
-            } catch (NumberFormatException e) {
-                System.out.println("Error! Input should be an integer.");
-            }
-
-            // Now store the properties to the preferences file. TODO Make this step a method?
-            try {
-                FileOutputStream out = new FileOutputStream("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/src/com/heatmap/preferences");
-                preferenceProps.store(out, "---Stacks heat map preferences---");
-            } catch (FileNotFoundException e) {
-                System.out.println(e);
-            } catch (IOException e) {
-                System.out.println("IOException: " + e);
-            }
-
-            // TODO Add an Apply button maybe?
-            // TODO Actually, rather than clearing input, the text areas should just display what the current preference
-            //      values are.
-            clearInput();
-        }
+        preferences.put(preferredTask.getSelectedItem().toString().toLowerCase() + ".good", Integer.toString(daysGood.getValue()));
+        preferences.put(preferredTask.getSelectedItem().toString().toLowerCase() + ".bad", Integer.toString(daysBad.getValue()));
     }
 
     /** Remove input from all input components in this PreferencesFrame. */
+    // TODO Do I even need this method any more? And would resetInput be more accurate?
     public void clearInput() {
-        daysGood.setText("");
-        daysOK.setText("");
-        daysBad.setText("");
+        // TODO This is what I should be saying:
+        //daysGood.setValue(daysGood.getDefaultValue());
+        //daysBad.setValue(daysGood.getDefaultValue());
+        daysGood.setValue(0);
+        daysBad.setValue(0);
     }
 }
