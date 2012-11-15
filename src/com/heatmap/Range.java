@@ -22,20 +22,9 @@ public class Range extends JLabel {
 	/** The last call number in this Range. */
 	private String endCallNumber;
 
-    /** The Date this Range was last checked for cleanliness. */
-    private Date dayLastChecked;
-
-    /** The Date this Range was last shifted. */
-    private Date dayLastShifted;
-
-    /** The Date this Range was last faced. */
-    private Date dayLastFaced;
-
-    /** The Date this Range was last dusted. */
-    private Date dayLastDusted;
-
-    /** The Date this Range was last shelf read. */
-    private Date dayLastRead;
+    // TODO Now that this Map is in place, get rid of the individual Date fields and their usages.
+    /** Map that holds the Date this Range last had given activities done to it. */
+    private HashMap<String, Date> dayLastMap = new HashMap<String, Date>(5);
 
     /** The GUI that this Range is contained in. */
     private GUI parentGUI;
@@ -52,6 +41,7 @@ public class Range extends JLabel {
 		YCOORD = y;
         setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/defaultRange.png"));
         addMouseListener(new MouseEventHandler());
+
         updateTooltip();
         parentGUI = gui;
     }
@@ -88,83 +78,33 @@ public class Range extends JLabel {
         updateTooltip();
 	}
 
-    // TODO Move this method to GUI?
     /** Set the Date this Range last had activity done to it to a new Date desiredActivityDate. */
     public void setDayLast(String activity, Date desiredDate) {
-        // TODO Make use of a map or similar.
-        if (activity.equals("checked")) {
-            dayLastChecked = desiredDate;
-        }
-        else if (activity.equals("shifted")) {
-            dayLastShifted = desiredDate;
-        }
-        else if (activity.equals("faced")) {
-            dayLastFaced = desiredDate;
-        }
-        else if (activity.equals("dusted")) {
-            dayLastDusted = desiredDate;
-        }
-        else if (activity.equals("read")) {
-            dayLastRead = desiredDate;
-        }
-
+        // TODO Add validation to make sure the key asked for is ok?
+        dayLastMap.put(activity, desiredDate);
         updateColor(activity);
     }
 
     /** Get the date this Range last had activity done to it. */
     public Date getDayLast(String activity) {
-        if (parentGUI.getDateControllers().containsKey(activity)) {
-            if (activity.equals("checked")) {
-                return dayLastChecked;
-            }
-            else if (activity.equals("shifted")) {
-                return dayLastShifted;
-            }
-            else if (activity.equals("faced")) {
-                return dayLastFaced;
-            }
-            else if (activity.equals("dusted")) {
-                return dayLastDusted;
-            }
-            // TODO Clean up this else hack.
-            else { // activity.equals("read"))
-                return dayLastRead;
-            }
+        if (dayLastMap.containsKey(activity)) {
+            return dayLastMap.get(activity);
         }
         else {
-            System.err.println("Error! Tried to get the Date of an invalid activity." + activity);
+            System.err.println("Error! Tried to get the Date of an invalid activity. " + activity);
             // TODO Handle this case more gracefully than returning a random date.
             return new Date();
         }
     }
 
+    // TODO Do I even need this method? Can't I just use getDayLastMap() to fill the same purpose?
     /** Get the number of days since a given
      * activity was performed on this Range. */
     private int getDaysSince(String activity) {
         Calendar c = Calendar.getInstance();
-        Date today = c.getTime();
 
-        if (parentGUI.getDateControllers().containsKey(activity)) {
-            // TODO Handle this more elegantly than a bunch of if/else ifs.
-            if (activity.equals("checked")) {
-                return Days.daysBetween(new DateTime(dayLastChecked), new DateTime(today)).getDays();
-            }
-            else if (activity.equals("shifted")) {
-                return Days.daysBetween(new DateTime(dayLastShifted), new DateTime(today)).getDays();
-            }
-            else if (activity.equals("faced")) {
-                return Days.daysBetween(new DateTime(dayLastFaced), new DateTime(today)).getDays();
-            }
-            else if (activity.equals("dusted")) {
-                return Days.daysBetween(new DateTime(dayLastDusted), new DateTime(today)).getDays();
-            }
-            else if (activity.equals("read")) {
-                return Days.daysBetween(new DateTime(dayLastRead), new DateTime(today)).getDays();
-            }
-            // TODO Handle this correctly.
-            else {
-                return -3000;
-            }
+        if (dayLastMap.containsKey(activity)) {
+            return Days.daysBetween(new DateTime(dayLastMap.get(activity)), new DateTime(c.getTime())).getDays();
         }
         else {
             // TODO Handle this more elegantly than returning a 0.
@@ -176,7 +116,6 @@ public class Range extends JLabel {
 	/** Re-set the color for this Range. If this Range has been clicked, use
      * the focused color rather than the normal Range color. */
 	// TODO Should this be changed to protected?
-    // TODO Make it more clear in the code what the false in updateColor(false) means.
 	public void updateColor(String action) {
         if (action.equals("clicked")) {
             setForeground(Color.BLUE);
@@ -242,15 +181,11 @@ public class Range extends JLabel {
                 parentGUI.getStartCallNumberController().setText(startCallNumber);
                 parentGUI.getEndCallNumberController().setText(endCallNumber);
 
-                // TODO Why does lastXController have a separate graphical representation? Why not store that graphical
-                //      representation in the dayLastX object?
                 // TODO This set of actions is nonsense. I think that I need to setDate to the value of this Range's
                 //      dateLastX.
-                parentGUI.getDateControllers().get("checked").setDate(dayLastChecked);
-                parentGUI.getDateControllers().get("shifted").setDate(dayLastShifted);
-                parentGUI.getDateControllers().get("faced").setDate(dayLastFaced);
-                parentGUI.getDateControllers().get("dusted").setDate(dayLastDusted);
-                parentGUI.getDateControllers().get("read").setDate(dayLastRead);
+                for (String activity : dayLastMap.keySet()) {
+                    parentGUI.getDateControllers().get(activity).setDate(dayLastMap.get(activity));
+                }
 
                 updateColor("mousedover");
                 // TODO Try to have the date picker display text in a more human-readable format.
@@ -265,5 +200,10 @@ public class Range extends JLabel {
                 updateColor(parentGUI.getSelectedView().getText().toLowerCase());
             }
         }
+    }
+
+    /** Get a HashMap of day last x that corresponds to this Range. */
+    public HashMap getDayLastMap() {
+        return dayLastMap;
     }
 }

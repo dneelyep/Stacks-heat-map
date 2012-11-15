@@ -8,7 +8,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.*;
-import java.util.List;
 
 import javax.swing.*;
 
@@ -89,7 +88,6 @@ public class GUI extends JApplet {
     /** Field to change the clicked-on Range's ending call #. */
     protected final JTextField endCallNumberController = initWithCoords(new JTextField("", 10), 3, 1);
 
-    // TODO Use input verification on the text fields to ensure values are appropriate.
     //      See http://docs.oracle.com/javase/tutorial/uiswing/misc/focus.html#inputVerification
     /** A Map of all the Date controllers in the GUI. */
     private LinkedHashMap<String, JXDatePicker> dateControllers = new LinkedHashMap<String, JXDatePicker>(5);
@@ -220,7 +218,6 @@ public class GUI extends JApplet {
                     focusedRange.setEnd(endCallNumberController.getText());
                 }
 
-                // TODO Just pass the controllers into setDayLast, and getDate() on the controller?
                 for (String key : dateControllers.keySet()) {
                     focusedRange.setDayLast(key, dateControllers.get(key).getDate());
                 }
