@@ -15,17 +15,15 @@ import java.util.prefs.Preferences;
 public class PreferencesFrame extends JFrame {
 
     /** ComboBox to change preferences for the task selected in the ComboBox. */
-    JComboBox<String> preferredTask = new JComboBox<String>(new Vector<String>(Arrays.asList("Checked", "Shifted", "Faced", "Dusted", "Read")));
+    JComboBox<String> preferredTaskController = new JComboBox<String>(new Vector<String>(Arrays.asList("Checked", "Shifted", "Faced", "Dusted", "Read")));
 
-    // TODO Better names for these sliders.
-    // TODO Change the JTextFields to JSliders. More intuitive for the user.
     /** Slider that allows the user to change the number of days considered
      * good since the current task has been completed. */
-     private JSlider daysGood = new JSlider();
+     private JSlider daysGoodController = new JSlider();
 
     /** Slider that allows the user to change the number of days considered
      * bad since the current task has been completed. */
-    private JSlider daysBad = new JSlider();
+    private JSlider daysBadController = new JSlider();
 
     /** Label to display the current value of the good slider. */
     private JLabel goodLabel = new JLabel("Good:");
@@ -53,20 +51,21 @@ public class PreferencesFrame extends JFrame {
 
         // TODO Review use of listeners, see if I can make use of more appropriate types. See docs at http://docs.oracle.com/javase/tutorial/uiswing/events/handling.html
         add(new JLabel("# days since:"));
-        add(preferredTask);
+        add(preferredTaskController);
 
-        for (JSlider slider : Arrays.asList(daysGood, daysBad)) {
+        for (JSlider slider : Arrays.asList(daysGoodController, daysBadController)) {
             slider.setMajorTickSpacing(10);
             slider.setMinorTickSpacing(5);
             slider.setPaintTicks(true);
             slider.setPaintLabels(true);
             // TODO Have the slider automatically snap while moving the slider, rather than only after releasing mouse.
+            //      This looks like it will be more difficult than anticipated. I don't think this is supported out of the box.
             slider.setSnapToTicks(true);
         }
 
         add(goodLabel);
 
-        daysGood.addChangeListener(new ChangeListener() {
+        daysGoodController.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider) e.getSource();
@@ -74,13 +73,13 @@ public class PreferencesFrame extends JFrame {
                 applyPreferences.setEnabled(true);
             }
         });
-        // TODO Here again I should be grabbing a default value rather than hard-coding 0.
-        daysGood.setValue(preferences.getInt("checked.good", 0));
+        // TODO Should I add a default value to days rather than hard-coding 0? IE Using clientProperties.
+        daysGoodController.setValue(preferences.getInt("checked.good", 0));
 
-        add(daysGood);
+        add(daysGoodController);
         add(badLabel);
 
-        daysBad.addChangeListener(new ChangeListener() {
+        daysBadController.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider) e.getSource();
@@ -88,8 +87,8 @@ public class PreferencesFrame extends JFrame {
                 applyPreferences.setEnabled(true);
             }
         });
-        daysBad.setValue(preferences.getInt("checked.bad", 0));
-        add(daysBad);
+        daysBadController.setValue(preferences.getInt("checked.bad", 0));
+        add(daysBadController);
 
         // Set actions to perform upon Apply/Close clicking.
         applyPreferences.addActionListener(new ActionListener() {
@@ -123,17 +122,7 @@ public class PreferencesFrame extends JFrame {
     // TODO Rename, implement method since the previous method was to write stuff to disk.
     /** Save user preferences for the currently focused activity. */
     public void savePreferences() {
-        preferences.put(preferredTask.getSelectedItem().toString().toLowerCase() + ".good", Integer.toString(daysGood.getValue()));
-        preferences.put(preferredTask.getSelectedItem().toString().toLowerCase() + ".bad", Integer.toString(daysBad.getValue()));
-    }
-
-    /** Remove input from all input components in this PreferencesFrame. */
-    // TODO Do I even need this method any more? And would resetInput be more accurate?
-    public void clearInput() {
-        // TODO This is what I should be saying:
-        //daysGood.setValue(daysGood.getDefaultValue());
-        //daysBad.setValue(daysGood.getDefaultValue());
-        daysGood.setValue(0);
-        daysBad.setValue(0);
+        preferences.put(preferredTaskController.getSelectedItem().toString().toLowerCase() + ".good", Integer.toString(daysGoodController.getValue()));
+        preferences.put(preferredTaskController.getSelectedItem().toString().toLowerCase() + ".bad", Integer.toString(daysBadController.getValue()));
     }
 }

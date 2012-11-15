@@ -1,5 +1,7 @@
 package com.heatmap;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -10,6 +12,7 @@ import java.util.ArrayList;
 import javax.swing.JRadioButton;
 
 import nu.xom.*;
+import org.jdesktop.swingx.JXDatePicker;
 
 /** Class to represent a floor in the library. */
 public class Floor {
@@ -37,6 +40,17 @@ public class Floor {
 	public Floor(int floorNumber, GUI gui) {
         parentGUI = gui;
 		makeFloor(floorNumber);
+
+        // TODO Could also use a changelistener, something more appropriate to radiobuttons.
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                parentGUI.setCurrentFloor(Floor.this);
+                parentGUI.setInputMode(false);
+                parentGUI.displayFloor(Floor.this);
+                write();
+            }
+        });
 	}
 
 	/** Create a set of Ranges that represents a Floor of the library. */
@@ -45,11 +59,11 @@ public class Floor {
 			if (floorNumber == 3) {
                 // TODO Convert these paths to relative paths or similar.
 				floorPath = "C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/floorData/thirdFloor.xml";
-                button = GUI.addCoords(new JRadioButton("3rd floor"), 0, 1);
+                button = parentGUI.initWithCoords(new JRadioButton("3rd floor"), 0, 1);
 			}
 			else {
                 floorPath = "C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/floorData/fourthFloor.xml";
-                button = GUI.addCoords(new JRadioButton("4th floor"), 0, 2);
+                button = parentGUI.initWithCoords(new JRadioButton("4th floor"), 0, 2);
 			}
 
             // TODO There has to be a better way of representing a constant object than
@@ -150,7 +164,7 @@ public class Floor {
 
             // Append the current Range's last checked Dates to the current Range element in the data file.
             int counter = 4;
-            for (String s : programRange.getDates().keySet()) {
+            for (String s : parentGUI.getDateControllers().keySet()) {
                 if (programRange.getDayLast(s) != null) {
                     fileRangeChildren.get(counter).appendChild(formatter.format(programRange.getDayLast(s)));
                 }
