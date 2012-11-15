@@ -119,7 +119,6 @@ public class PreferencesFrame extends JFrame {
         pack();
     }
 
-    // TODO Rename, implement method since the previous method was to write stuff to disk.
     /** Save user preferences for the currently focused activity. */
     public void savePreferences() {
         preferences.put(preferredTaskController.getSelectedItem().toString().toLowerCase() + ".good", Integer.toString(daysGoodController.getValue()));

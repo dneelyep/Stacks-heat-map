@@ -44,6 +44,7 @@ public class GUI extends JApplet {
     /** A bit of text that displays a title for the program. */
     private final JLabel programTitle = initWithCoords(new JLabel("Stacks Cleanliness Heat Map"), 1, 0);
 
+    // TODO Convert viewDaysSince buttons into a Map as well to increase conciseness.
     /** Button which, when clicked, will change the colors of Ranges to indicate how many days it's
      * been since each Range has been checked. */
     private final JRadioButton viewDaysSinceChecked = initWithCoords(new JRadioButton("Checked"), 6, 2);

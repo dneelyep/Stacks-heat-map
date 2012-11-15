@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import javax.swing.JRadioButton;
 
 import nu.xom.*;
-import org.jdesktop.swingx.JXDatePicker;
 
 /** Class to represent a floor in the library. */
 public class Floor {
@@ -89,35 +88,15 @@ public class Floor {
                     programRange.setStart(e.getFirstChildElement("begin").getValue());
     				programRange.setEnd(e.getFirstChildElement("end").getValue());
 
-                    // TODO This is very ugly, clean it up.
                     DateFormat formatter = DateFormat.getDateInstance();
                     // TODO Since the problem is that we're reading an unparseable (empty)
                     // date, we need to handle that somehow. Set the date to a safe value?
-                    try {
-                        programRange.setDayLast("checked", formatter.parse(e.getFirstChildElement("checked").getValue()));
-                    } catch (ParseException p) {
-    					System.out.println("Error parsing Date checked:" + p);
-    				}
-                    try {
-                        programRange.setDayLast("shifted", formatter.parse(e.getFirstChildElement("shifted").getValue()));
-                    } catch (ParseException p) {
-                        System.out.println("Error parsing Date shifted:" + p);
-                    }
-                    try {
-                        programRange.setDayLast("faced",   formatter.parse(e.getFirstChildElement("faced").getValue()));
-                    } catch (ParseException p) {
-                        System.out.println("Error parsing Date faced:  " + p);
-                    }
-                    try {
-                        programRange.setDayLast("dusted",  formatter.parse(e.getFirstChildElement("dusted").getValue()));
-                    } catch (ParseException p) {
-                        System.out.println("Error parsing Date dusted: " + p);
-                    }
-
-                    try {
-                        programRange.setDayLast("read",    formatter.parse(e.getFirstChildElement("read").getValue()));
-                    } catch (ParseException p) {
-                        System.out.println("Error parsing Date read:   " + p);
+                    for (String activity : parentGUI.getDateControllers().keySet()) {
+                        try {
+                            programRange.setDayLast(activity, formatter.parse(e.getFirstChildElement(activity).getValue()));
+                        } catch (ParseException p) {
+                            System.out.println("Error parsing Date " + activity + ": " + p);
+                        }
                     }
                 }
     		}

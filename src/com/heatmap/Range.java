@@ -22,7 +22,6 @@ public class Range extends JLabel {
 	/** The last call number in this Range. */
 	private String endCallNumber;
 
-    // TODO Now that this Map is in place, get rid of the individual Date fields and their usages.
     /** Map that holds the Date this Range last had given activities done to it. */
     private HashMap<String, Date> dayLastMap = new HashMap<String, Date>(5);
 
@@ -97,7 +96,6 @@ public class Range extends JLabel {
         }
     }
 
-    // TODO Do I even need this method? Can't I just use getDayLastMap() to fill the same purpose?
     /** Get the number of days since a given
      * activity was performed on this Range. */
     private int getDaysSince(String activity) {
@@ -127,7 +125,6 @@ public class Range extends JLabel {
             setForeground(Color.CYAN);
             setIcon(new ImageIcon(IMGROOT + "mousedOverRange.png"));
         }
-        // TODO What's the deal with making sure the action is not "none"?
         else {
             if (getDaysSince(action) < 15) {
                 setIcon(new ImageIcon(IMGROOT + "goodRange.png"));
@@ -181,8 +178,6 @@ public class Range extends JLabel {
                 parentGUI.getStartCallNumberController().setText(startCallNumber);
                 parentGUI.getEndCallNumberController().setText(endCallNumber);
 
-                // TODO This set of actions is nonsense. I think that I need to setDate to the value of this Range's
-                //      dateLastX.
                 for (String activity : dayLastMap.keySet()) {
                     parentGUI.getDateControllers().get(activity).setDate(dayLastMap.get(activity));
                 }
@@ -200,10 +195,5 @@ public class Range extends JLabel {
                 updateColor(parentGUI.getSelectedView().getText().toLowerCase());
             }
         }
-    }
-
-    /** Get a HashMap of day last x that corresponds to this Range. */
-    public HashMap getDayLastMap() {
-        return dayLastMap;
     }
 }
