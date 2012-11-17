@@ -250,7 +250,6 @@ public class GUI extends JApplet {
             addComponent(button, g);
         }
 
-        allowInput(false);
         thirdFloor = new Floor(3, this);
         fourthFloor = new Floor(4, this);
         currentFloor = thirdFloor;
@@ -284,6 +283,7 @@ public class GUI extends JApplet {
         addComponent(fourthFloor.getButton(), g);
 
         displayFloor(currentFloor);
+        allowInput(false);
     }
 
     /** Display a given Floor floor's Ranges on this GUI, coloring
@@ -296,7 +296,6 @@ public class GUI extends JApplet {
         }
         else {
             floorComponents.removeAll();
-            System.out.println(getSelectedView().getText().toLowerCase());
             floor.updateRangeColors(getSelectedView().getText().toLowerCase());
 
             for (Range r : floor.getRanges()) {
@@ -320,19 +319,25 @@ public class GUI extends JApplet {
         }
     }
 
-    // TODO Make the viewdayssince buttons become disabled when input mode occurs.
     /** Allow or disallow the user to edit the properties
      * of a clicked-on Range. */
-      private void allowInput(Boolean b) {
-         // TODO Convert this into a single for each loop.
-         for (JComponent picker : Arrays.asList(startCallNumberController, endCallNumberController, submitData, cancel)) {
-             picker.setEnabled(b);
-         }
+    private void allowInput(Boolean b) {
+        // TODO Convert this into a single for each loop.
+        for (JComponent picker : Arrays.asList(startCallNumberController, endCallNumberController, submitData, cancel)) {
+            picker.setEnabled(b);
+        }
 
-         for (JXDatePicker picker : dateControllers.values()) {
-             picker.setEnabled(b);
-         }
-     }
+        for (JXDatePicker picker : dateControllers.values()) {
+            picker.setEnabled(b);
+        }
+
+        for (JRadioButton button : viewDaysSinceMap.values()) {
+            button.setEnabled(!b);
+        }
+
+        thirdFloor.getButton().setEnabled(!b);
+        fourthFloor.getButton().setEnabled(!b);
+    }
 
     /** Add a given JComponent component to the GUI. */
     private <T extends JComponent> void addComponent(T component, GridBagConstraints constraints) {

@@ -77,8 +77,6 @@ public class PreferencesFrame extends JFrame {
             slider.setMinorTickSpacing(5);
             slider.setPaintTicks(true);
             slider.setPaintLabels(true);
-            // TODO Have the slider automatically snap while moving the slider, rather than only after releasing mouse.
-            //      This looks like it will be more difficult than anticipated. I don't think this is supported out of the box.
             slider.setSnapToTicks(true);
         }
 
@@ -86,8 +84,13 @@ public class PreferencesFrame extends JFrame {
         daysGoodController.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                goodLabel.setText("Good: " + ((JSlider) e.getSource()).getValue());
-                applyPreferences.setEnabled(true);
+                if (daysGoodController.getValue() > daysBadController.getValue()) {
+                    daysGoodController.setValue(daysBadController.getValue());
+                }
+                else {
+                    goodLabel.setText("Good: " + daysGoodController.getValue());
+                    applyPreferences.setEnabled(true);
+                }
             }
         });
         // TODO Should I add a default value to days rather than hard-coding 0? IE Using clientProperties.
@@ -99,9 +102,13 @@ public class PreferencesFrame extends JFrame {
         daysBadController.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                // TODO Do I need the e.getSource()? Can't I use daysBadController.getValue()?
-                badLabel.setText("Bad: " + ((JSlider) e.getSource()).getValue());
-                applyPreferences.setEnabled(true);
+                if (daysBadController.getValue() < daysGoodController.getValue()) {
+                   daysBadController.setValue(daysGoodController.getValue());
+                }
+                else {
+                    badLabel.setText("Bad: " + daysBadController.getValue());
+                    applyPreferences.setEnabled(true);
+                }
             }
         });
         daysBadController.setValue(preferences.getInt("checked.bad", 0));
