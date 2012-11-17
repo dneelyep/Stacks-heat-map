@@ -3,7 +3,13 @@ package com.heatmap;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.*;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.NodeChangeListener;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 
 import javax.swing.*;
 
@@ -14,7 +20,7 @@ import org.joda.time.Days;
 public class Range extends JLabel {
 
     /** String that holds the base path for all images accessed in this Range. */
-    private final String IMGROOT = "C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/";
+    private final String IMGROOT = "C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/bin/res/bin/";
 
 	/** The first call number in this Range. */
 	private String startCallNumber;
@@ -23,7 +29,7 @@ public class Range extends JLabel {
 	private String endCallNumber;
 
     /** Map that holds the Date this Range last had given activities done to it. */
-    private HashMap<String, Date> dayLastMap = new HashMap<String, Date>(5);
+    private HashMap<String, Date> dayLastMap = new HashMap<>(5);
 
     /** The GUI that this Range is contained in. */
     private GUI parentGUI;
@@ -40,8 +46,6 @@ public class Range extends JLabel {
 		YCOORD = y;
         setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/defaultRange.png"));
         addMouseListener(new MouseEventHandler());
-
-        updateTooltip();
         parentGUI = gui;
     }
 	
@@ -68,13 +72,11 @@ public class Range extends JLabel {
 	/** Set this Range's start call number to a new value start. */
 	public void setStart(String start) {
 		startCallNumber = start;
-        updateTooltip();
 	}
 	
 	/** Set this Range's end call number to a new value end. */
 	public void setEnd(String end) {
 		endCallNumber = end;
-        updateTooltip();
 	}
 
     /** Set the Date this Range last had activity done to it to a new Date desiredActivityDate. */
@@ -113,12 +115,12 @@ public class Range extends JLabel {
 
 	/** Re-set the color for this Range. If this Range has been clicked, use
      * the focused color rather than the normal Range color. */
-	// TODO Should this be changed to protected?
-	public void updateColor(String action) {
+	protected void updateColor(String action) {
         if (action.equals("clicked")) {
             setForeground(Color.BLUE);
             // TODO Find a more graceful way of handling paths. EG relative
-            // paths, or just replace the end of the path name.
+            // paths, or just replace the end of the path name. This will be more difficult than expected. The
+            // problem is in finding the image's path relative to the applet.
             setIcon(new ImageIcon(IMGROOT + "selectedRange.png"));
         }
         else if (action.equals("mousedover")) {
@@ -126,10 +128,14 @@ public class Range extends JLabel {
             setIcon(new ImageIcon(IMGROOT + "mousedOverRange.png"));
         }
         else {
-            if (getDaysSince(action) < 15) {
+            Preferences prefs = Preferences.userNodeForPackage(getClass());
+            String selectedActivity = parentGUI.getSelectedView().getText().toLowerCase();
+
+            if (getDaysSince(action) < prefs.getInt(selectedActivity + ".good", 0)) {
                 setIcon(new ImageIcon(IMGROOT + "goodRange.png"));
             }
-            else if (getDaysSince(action) >= 15 && getDaysSince(action) < 30) {
+            else if (getDaysSince(action) >= prefs.getInt(selectedActivity + ".good", 0)
+                  && getDaysSince(action) < prefs.getInt(selectedActivity + ".bad", 100)) {
                 setIcon(new ImageIcon(IMGROOT + "decentRange.png"));
             }
             else {
@@ -137,21 +143,6 @@ public class Range extends JLabel {
             }
         }
 	}
-
-    /** Update the contents of this Range's tooltip. */
-    public void updateTooltip() {
-        // TODO If I want the more detailed tooltip, I will need to format the Dates. To do that,
-        // I need to check for nulls, etc.
-        setToolTipText("<html>Start: " + startCallNumber
-                     + "<br />End: " + endCallNumber
-/*                     + "<br />Last checked: " + formatter.format(lastCheckedController)
-                     + "<br />Last shifted: " + formatter.format(lastShiftedController)
-                     + "<br />Last faced: "   + formatter.format(lastFacedController)
-                     + "<br />Last dusted: "  + fonrmatter.format(lastDustedController)
-                     + "<br />Last read: "    + formatter.format(lastReadController)*/
-                     + "</html>");
-    }
-
 
     /** Inner class with the sole purpose of handling mouse events for this Range. */
     private class MouseEventHandler extends MouseAdapter {
@@ -165,16 +156,13 @@ public class Range extends JLabel {
             }
         }
 
-        // TODO Consider using a MouseMotionListener.
         /** Update the GUI components that display information about the
          * currently moused-over Range. */
         @Override
         public void mouseEntered(MouseEvent e) {
             // TODO Try to find a more natural way than focusedRange == null to express whether or not a Range is focused.
             if (parentGUI.getFocusedRange() == null) {
-                // TODO Make this a method of the startCallNumber text field in the gui?
                 // Here's current progress on what I should be shooting for.
-                // TODO Here's another chance to use iteration through a list of input components.
                 parentGUI.getStartCallNumberController().setText(startCallNumber);
                 parentGUI.getEndCallNumberController().setText(endCallNumber);
 

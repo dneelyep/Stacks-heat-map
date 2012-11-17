@@ -27,7 +27,8 @@ public class Floor {
 	private Document floorDataFile;
 	
 	/** The path to this Floor's data file. */
-	private String floorPath;
+    // TODO Convert this path to a relative path.
+    private String floorPath = "C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/bin/res/floorData/";
 	
 	/** Radio button used to display this Floor in the GUI. */
 	private JRadioButton button;
@@ -40,7 +41,6 @@ public class Floor {
         parentGUI = gui;
 		makeFloor(floorNumber);
 
-        // TODO Could also use a changelistener, something more appropriate to radiobuttons.
         button.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -54,59 +54,21 @@ public class Floor {
 
 	/** Create a set of Ranges that represents a Floor of the library. */
 	private void makeFloor(int floorNumber) {
-		if ((floorNumber == 3 || floorNumber == 4) && !initialized) {
+        if ((floorNumber == 3 || floorNumber == 4) && !initialized) {
 			if (floorNumber == 3) {
-                // TODO Convert these paths to relative paths or similar.
-				floorPath = "C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/floorData/thirdFloor.xml";
+				floorPath += "thirdFloor.xml";
                 button = parentGUI.initWithCoords(new JRadioButton("3rd floor"), 0, 1);
 			}
 			else {
-                floorPath = "C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/floorData/fourthFloor.xml";
+                floorPath += "fourthFloor.xml";
                 button = parentGUI.initWithCoords(new JRadioButton("4th floor"), 0, 2);
 			}
 
+            read();
+
             // TODO There has to be a better way of representing a constant object than
-			// only allowing it to be initialized once as I'm doing here. Maybe an enumeration?
-			// Or make ranges final, so it can't be overridden later? Or make this object final?
-            // TODO Break this up into a separate read() method?
-    		try {
-    	    	floorDataFile = new Builder().build(floorPath);
-    			Element root = floorDataFile.getRootElement();
-    			Elements rangeElements = root.getChildElements();
-
-    			// Make an array of Ranges, that's as large as the number of
-    			// Ranges stored in the data file.
-    			ranges = new ArrayList<Range>(rangeElements.size());
-
-    			for (int i = 0; i < rangeElements.size(); i++) {
-    				Element e = rangeElements.get(i);
-    				String fileX = e.getFirstChildElement("x").getValue();
-    				String fileY = e.getFirstChildElement("y").getValue();
-    				ranges.add(new Range(Integer.parseInt(fileX), Integer.parseInt(fileY), parentGUI));
-
-                    Range programRange = ranges.get(i);
-                    programRange.setStart(e.getFirstChildElement("begin").getValue());
-    				programRange.setEnd(e.getFirstChildElement("end").getValue());
-
-                    DateFormat formatter = DateFormat.getDateInstance();
-                    // TODO Since the problem is that we're reading an unparseable (empty)
-                    // date, we need to handle that somehow. Set the date to a safe value?
-                    for (String activity : parentGUI.getDateControllers().keySet()) {
-                        try {
-                            programRange.setDayLast(activity, formatter.parse(e.getFirstChildElement(activity).getValue()));
-                        } catch (ParseException p) {
-                            System.out.println("Error parsing Date " + activity + ": " + p);
-                        }
-                    }
-                }
-    		}
-        	catch (ParsingException e) {
-        		System.err.println("Error parsing this Floor's XML file.");
-        	}
-        	catch (IOException e) {
-        		System.err.println("IOException: " + e);
-        	}
-
+            // only allowing it to be initialized once as I'm doing here. Maybe an enumeration?
+            // Or make ranges final, so it can't be overridden later? Or make this object final?
             initialized = true;
 		}
 		else {
@@ -138,7 +100,6 @@ public class Floor {
 			fileRangeChildren.get(2).appendChild(programRange.getStart());
 			fileRangeChildren.get(3).appendChild(programRange.getEnd());
 
-			// TODO Make formatter a field?
 			DateFormat formatter = DateFormat.getDateInstance();
 
             // Append the current Range's last checked Dates to the current Range element in the data file.
@@ -163,6 +124,47 @@ public class Floor {
 		  System.err.println("Error: " + e.getMessage());
 		}
 	}
+
+    /** Attempt to read in this Floor's Range data from the data file. */
+    private void read() {
+        try {
+            floorDataFile = new Builder().build(floorPath);
+            Element root = floorDataFile.getRootElement();
+            Elements rangeElements = root.getChildElements();
+
+            // Make an array of Ranges, that's as large as the number of
+            // Ranges stored in the data file.
+            ranges = new ArrayList<>(rangeElements.size());
+
+            for (int i = 0; i < rangeElements.size(); i++) {
+                Element e = rangeElements.get(i);
+                String fileX = e.getFirstChildElement("x").getValue();
+                String fileY = e.getFirstChildElement("y").getValue();
+                ranges.add(new Range(Integer.parseInt(fileX), Integer.parseInt(fileY), parentGUI));
+
+                Range programRange = ranges.get(i);
+                programRange.setStart(e.getFirstChildElement("begin").getValue());
+                programRange.setEnd(e.getFirstChildElement("end").getValue());
+
+                DateFormat formatter = DateFormat.getDateInstance();
+                // TODO Since the problem is that we're reading an unparseable (empty)
+                // date, we need to handle that somehow. Set the date to a safe value?
+                for (String activity : parentGUI.getDateControllers().keySet()) {
+                    try {
+                        programRange.setDayLast(activity, formatter.parse(e.getFirstChildElement(activity).getValue()));
+                    } catch (ParseException p) {
+                        System.out.println("Error parsing Date " + activity + ": " + p);
+                    }
+                }
+            }
+        }
+        catch (ParsingException e) {
+            System.err.println("Error parsing this Floor's XML file.");
+        }
+        catch (IOException e) {
+            System.err.println("IOException: " + e);
+        }
+    }
 
     /** Get an ArrayList of this Floor's Ranges.*/
     public ArrayList<Range> getRanges() {

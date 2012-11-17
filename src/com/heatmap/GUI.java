@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.*;
+import java.util.prefs.Preferences;
 
 import javax.swing.*;
 
@@ -44,26 +45,9 @@ public class GUI extends JApplet {
     /** A bit of text that displays a title for the program. */
     private final JLabel programTitle = initWithCoords(new JLabel("Stacks Cleanliness Heat Map"), 1, 0);
 
-    // TODO Convert viewDaysSince buttons into a Map as well to increase conciseness.
-    /** Button which, when clicked, will change the colors of Ranges to indicate how many days it's
-     * been since each Range has been checked. */
-    private final JRadioButton viewDaysSinceChecked = initWithCoords(new JRadioButton("Checked"), 6, 2);
-
-    /** Button which, when clicked, will change the colors of Ranges to indicate how many days it's
-     * been since each Range has been shifted. */
-    private final JRadioButton viewDaysSinceShifted = initWithCoords(new JRadioButton("Shifted"), 6, 3);
-
-    /** Button which, when clicked, will change the colors of Ranges to indicate how many days it's
-     * been since each Range has been faced. */
-    private final JRadioButton viewDaysSinceFaced = initWithCoords(new JRadioButton("Faced"), 6, 4);
-
-    /** Button which, when clicked, will change the colors of Ranges to indicate how many days it's
-     * been since each Range has been dusted. */
-    private final JRadioButton viewDaysSinceDusted = initWithCoords(new JRadioButton("Dusted"), 6, 5);
-
-    /** Button which, when clicked, will change the colors of Ranges to indicate how many days it's
-     * been since each Range has been shelf read. */
-    private final JRadioButton viewDaysSinceRead = initWithCoords(new JRadioButton("Read"), 6, 6);
+    /** A Map of all the JRadioButtons that allow the user to change the
+     * activity they're viewing in the GUI. */
+    private LinkedHashMap<String, JRadioButton> viewDaysSinceMap = new LinkedHashMap<>(5);
 
     /** Button group to only allow viewing the properties of a single property of Ranges at a time. */
     private final ButtonGroup viewDaysSinceButtons = new ButtonGroup();
@@ -81,23 +65,32 @@ public class GUI extends JApplet {
     private final JMenuItem menuQuit = new JMenuItem("Quit");
 
     /** The menu popup that allows users to change preferences. */
-    private PreferencesFrame preferencesFrame = new PreferencesFrame();
+    private PreferencesFrame preferencesFrame = new PreferencesFrame(this);
 
     /** Field to change the clicked-on Range's starting call #. */
-    protected final JTextField startCallNumberController = initWithCoords(new JTextField("", 10), 3, 0);
+    private final JTextField startCallNumberController = initWithCoords(new JTextField("", 10), 3, 0);
 
     /** Field to change the clicked-on Range's ending call #. */
-    protected final JTextField endCallNumberController = initWithCoords(new JTextField("", 10), 3, 1);
+    private final JTextField endCallNumberController = initWithCoords(new JTextField("", 10), 3, 1);
 
-    //      See http://docs.oracle.com/javase/tutorial/uiswing/misc/focus.html#inputVerification
     /** A Map of all the Date controllers in the GUI. */
-    private LinkedHashMap<String, JXDatePicker> dateControllers = new LinkedHashMap<String, JXDatePicker>(5);
+    private LinkedHashMap<String, JXDatePicker> dateControllers = new LinkedHashMap<>(5);
 
     /** Floor that represents the library's third floor. */
     private Floor thirdFloor;
 
     /** Floor that represents the library's fourth floor. */
     private Floor fourthFloor;
+
+    /** Label to display the amount of days considered good since a task has been completed. */
+    private JLabel goodLegend = new JLabel("Good: < " + 30 + " days.");
+
+    /** Label to display the amount of days considered ok since a task has been completed. */
+    private JLabel okLegend = new JLabel("OK: >= " + 30 +" and < " + 50 + " days.");
+
+    /** Label to display the amount of days considered bad since a task has been completed. */
+    private JLabel badLegend = new JLabel("Bad: > " + 50 +" days.");
+
 
     /** Attempt to initialize the GUI for this program. */
     @Override
@@ -231,26 +224,30 @@ public class GUI extends JApplet {
         submitData.setEnabled(false);
         addComponent(submitData, g);
 
-        viewDaysSinceChecked.setSelected(true);
+        viewDaysSinceMap.put("checked", initWithCoords(new JRadioButton("Checked"), 6, 2));
+        viewDaysSinceMap.put("shifted", initWithCoords(new JRadioButton("Shifted"), 6, 3));
+        viewDaysSinceMap.put("faced",   initWithCoords(new JRadioButton("Faced"),   6, 4));
+        viewDaysSinceMap.put("dusted",  initWithCoords(new JRadioButton("Dusted"),  6, 5));
+        viewDaysSinceMap.put("read",    initWithCoords(new JRadioButton("Read"),    6, 6));
+
+        viewDaysSinceMap.get("checked").setSelected(true);
 
         // Add buttons to their button group.
-        viewDaysSinceButtons.add(viewDaysSinceChecked);
-        viewDaysSinceButtons.add(viewDaysSinceShifted);
-        viewDaysSinceButtons.add(viewDaysSinceFaced);
-        viewDaysSinceButtons.add(viewDaysSinceDusted);
-        viewDaysSinceButtons.add(viewDaysSinceRead);
+        for (JRadioButton button : viewDaysSinceMap.values()) {
+            viewDaysSinceButtons.add(button);
+        }
 
         // TODO Look into adding a ChangeListener to the viewDaysSince ButtonGroup rather than an ActionListener.
-        for (Enumeration<AbstractButton> buttons = viewDaysSinceButtons.getElements(); buttons.hasMoreElements();) {
-            JRadioButton currentButton = (JRadioButton) buttons.nextElement();
-            currentButton.addActionListener(new ActionListener() {
+        // TODO Rename viewDaysSinceMap to viewDaysSinceControllers OR activityViewedControllers
+        for (JRadioButton button : viewDaysSinceMap.values()) {
+            button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     currentFloor.updateRangeColors(getSelectedView().getText().toLowerCase());
+                    updateLegend();
                 }
             });
-
-            addComponent(currentButton, g);
+            addComponent(button, g);
         }
 
         allowInput(false);
@@ -263,6 +260,26 @@ public class GUI extends JApplet {
         floorButtons.add(fourthFloor.getButton());
 
         // TODO Look into removing the g argument to addComponent, since it's the same for each call of the method.
+        JPanel legend = initWithCoords(new JPanel() {{
+            setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createTitledBorder("Legend"),
+                    BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        }}, 5, 7);
+        legend.setBackground(Color.GRAY);
+        legend.setLayout(new BoxLayout(legend, BoxLayout.PAGE_AXIS));
+
+        goodLegend.setForeground(Color.GREEN);
+        okLegend.setForeground(Color.YELLOW);
+        badLegend.setForeground(Color.RED);
+
+        legend.add(goodLegend);
+        legend.add(okLegend);
+        legend.add(badLegend);
+
+        g.gridwidth = 2;
+        addComponent(legend, g);
+
+        g.gridwidth = 1;
         addComponent(thirdFloor.getButton(), g);
         addComponent(fourthFloor.getButton(), g);
 
@@ -285,7 +302,6 @@ public class GUI extends JApplet {
             for (Range r : floor.getRanges()) {
                 fCConstraints.gridx = r.getXCoord();
                 fCConstraints.gridy = r.getYCoord();
-                r.updateTooltip();
                 floorComponents.add(r, fCConstraints);
             }
 
@@ -304,9 +320,10 @@ public class GUI extends JApplet {
         }
     }
 
+    // TODO Make the viewdayssince buttons become disabled when input mode occurs.
     /** Allow or disallow the user to edit the properties
      * of a clicked-on Range. */
-     private void allowInput(Boolean b) {
+      private void allowInput(Boolean b) {
          // TODO Convert this into a single for each loop.
          for (JComponent picker : Arrays.asList(startCallNumberController, endCallNumberController, submitData, cancel)) {
              picker.setEnabled(b);
@@ -351,10 +368,9 @@ public class GUI extends JApplet {
 
     /** Get the Button that represents the activity that is currently displayed in the GUI. */
     protected AbstractButton getSelectedView() {
-        for (Enumeration<AbstractButton> buttons = viewDaysSinceButtons.getElements(); buttons.hasMoreElements();) {
-            AbstractButton currentButton = buttons.nextElement();
-            if (currentButton.isSelected()) {
-                return currentButton;
+        for (JRadioButton button : viewDaysSinceMap.values()) {
+            if (button.isSelected()) {
+                return button;
             }
         }
 
@@ -391,5 +407,20 @@ public class GUI extends JApplet {
     /** Get the GUI component that changes the focused Range's end call number. */
     public JTextField getEndCallNumberController() {
         return endCallNumberController;
+    }
+
+    /** Returns the Floor this GUI is currently displaying. */
+    public Floor getCurrentFloor() {
+        return currentFloor;
+    }
+
+    /** Update the contents of all the labels in the GUI's legend. */
+    public void updateLegend() {
+        Preferences prefs = Preferences.userNodeForPackage(getClass());
+        String selectedActivity = getSelectedView().getText().toLowerCase();
+
+        goodLegend.setText("Good: < " + prefs.getInt(selectedActivity + ".good", 0) + " days.");
+        okLegend.setText("OK: >= " + prefs.getInt(selectedActivity + ".good", 0) +" and < " + prefs.getInt(selectedActivity + ".bad", 100) + " days.");
+        badLegend.setText("Bad: >= " + prefs.getInt(selectedActivity + ".bad", 100) +" days.");
     }
 }

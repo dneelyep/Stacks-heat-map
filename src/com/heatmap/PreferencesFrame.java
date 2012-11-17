@@ -6,6 +6,8 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.util.Arrays;
 import java.util.Vector;
 import java.util.prefs.Preferences;
@@ -15,7 +17,8 @@ import java.util.prefs.Preferences;
 public class PreferencesFrame extends JFrame {
 
     /** ComboBox to change preferences for the task selected in the ComboBox. */
-    JComboBox<String> preferredTaskController = new JComboBox<String>(new Vector<String>(Arrays.asList("Checked", "Shifted", "Faced", "Dusted", "Read")));
+    private JComboBox<String> preferredTaskController = new
+            JComboBox<>(new Vector<>(Arrays.asList("Checked", "Shifted", "Faced", "Dusted", "Read")));
 
     /** Slider that allows the user to change the number of days considered
      * good since the current task has been completed. */
@@ -40,17 +43,33 @@ public class PreferencesFrame extends JFrame {
     /** Button to close out the this PreferencesFrame. */
     private JButton close = new JButton("Close");
 
+    /** The GUI this PreferencesFrame belongs to. */
+    private GUI parentGUI;
+
     // TODO Look into converting this class into a Singleton, since I only need one instance of it in the program.
     /** Create a new PreferencesFrame with the given
      * title. Add to the frame various components to allow
      * the user to change the amount of days considered acceptable
      * between task completion. */
-    public PreferencesFrame() {
+    public PreferencesFrame(GUI gui) {
         super("Preferences");
+        parentGUI = gui;
         setLayout(new GridLayout(4, 2));
+        setResizable(false);
 
         // TODO Review use of listeners, see if I can make use of more appropriate types. See docs at http://docs.oracle.com/javase/tutorial/uiswing/events/handling.html
         add(new JLabel("# days since:"));
+        preferredTaskController.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                daysGoodController.setValue(preferences.getInt(preferredTaskController.getSelectedItem().toString().toLowerCase() + ".good", 0));
+                daysBadController.setValue(preferences.getInt(preferredTaskController.getSelectedItem().toString().toLowerCase() + ".bad", 100));
+                goodLabel.setText("Good: " + daysGoodController.getValue());
+                badLabel.setText("Bad: " + daysBadController.getValue());
+            }
+            }
+        });
         add(preferredTaskController);
 
         for (JSlider slider : Arrays.asList(daysGoodController, daysBadController)) {
@@ -64,12 +83,10 @@ public class PreferencesFrame extends JFrame {
         }
 
         add(goodLabel);
-
         daysGoodController.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                JSlider source = (JSlider) e.getSource();
-                goodLabel.setText("Good: " + source.getValue());
+                goodLabel.setText("Good: " + ((JSlider) e.getSource()).getValue());
                 applyPreferences.setEnabled(true);
             }
         });
@@ -77,13 +94,13 @@ public class PreferencesFrame extends JFrame {
         daysGoodController.setValue(preferences.getInt("checked.good", 0));
 
         add(daysGoodController);
-        add(badLabel);
 
+        add(badLabel);
         daysBadController.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                JSlider source = (JSlider) e.getSource();
-                badLabel.setText("Bad: " + source.getValue());
+                // TODO Do I need the e.getSource()? Can't I use daysBadController.getValue()?
+                badLabel.setText("Bad: " + ((JSlider) e.getSource()).getValue());
                 applyPreferences.setEnabled(true);
             }
         });
@@ -95,6 +112,7 @@ public class PreferencesFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 savePreferences();
+                parentGUI.updateLegend();
                 applyPreferences.setEnabled(false);
             }
         });
@@ -123,5 +141,6 @@ public class PreferencesFrame extends JFrame {
     public void savePreferences() {
         preferences.put(preferredTaskController.getSelectedItem().toString().toLowerCase() + ".good", Integer.toString(daysGoodController.getValue()));
         preferences.put(preferredTaskController.getSelectedItem().toString().toLowerCase() + ".bad", Integer.toString(daysBadController.getValue()));
+        parentGUI.getCurrentFloor().updateRangeColors(preferredTaskController.getSelectedItem().toString().toLowerCase());
     }
 }
