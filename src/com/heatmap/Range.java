@@ -3,12 +3,7 @@ package com.heatmap;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.*;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.NodeChangeListener;
-import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import javax.swing.*;
@@ -28,8 +23,8 @@ public class Range extends JLabel {
 	/** The last call number in this Range. */
 	private String endCallNumber;
 
-    /** Map that holds the Date this Range last had given activities done to it. */
-    private HashMap<String, Date> dayLastMap = new HashMap<>(5);
+    /** Map that holds the Date this Range last had given Activities done to it. */
+    private HashMap<Activities, Date> dayLastMap = new HashMap<>(5);
 
     /** The GUI that this Range is contained in. */
     private GUI parentGUI;
@@ -80,27 +75,24 @@ public class Range extends JLabel {
 	}
 
     /** Set the Date this Range last had activity done to it to a new Date desiredActivityDate. */
-    public void setDayLast(String activity, Date desiredDate) {
-        // TODO Add validation to make sure the key asked for is ok?
+    public void setDayLast(Activities activity, Date desiredDate) {
         dayLastMap.put(activity, desiredDate);
-        updateColor(activity);
+        updateColor(activity.toString());
     }
 
-    /** Get the date this Range last had activity done to it. */
-    public Date getDayLast(String activity) {
-        if (dayLastMap.containsKey(activity)) {
+    /** Get the date this Range last had a given activity done to it. */
+    public Date getDayLast(Activities activity) {
+        // Fail when there is no Date yet set for a given activity.
+        if (dayLastMap.containsKey(activity))
             return dayLastMap.get(activity);
-        }
-        else {
-            System.err.println("Error! Tried to get the Date of an invalid activity. " + activity);
+        else
             // TODO Handle this case more gracefully than returning a random date.
             return new Date();
-        }
     }
 
     /** Get the number of days since a given
      * activity was performed on this Range. */
-    private int getDaysSince(String activity) {
+    private int getDaysSince(Activities activity) {
         Calendar c = Calendar.getInstance();
 
         if (dayLastMap.containsKey(activity)) {
@@ -108,7 +100,7 @@ public class Range extends JLabel {
         }
         else {
             // TODO Handle this more elegantly than returning a 0.
-            System.err.println("Error! Attempted to get the number of days since an invalid activity was performed: " + activity);
+            System.err.println("Error! Attempted to get the number of days since an invalid activity was performed: " + activity.toString());
             return 0;
         }
     }
@@ -129,13 +121,12 @@ public class Range extends JLabel {
         }
         else {
             Preferences prefs = Preferences.userNodeForPackage(getClass());
-            String selectedActivity = parentGUI.getSelectedView().getText().toLowerCase();
 
-            if (getDaysSince(action) < prefs.getInt(selectedActivity + ".good", 0)) {
+            if (getDaysSince(Activities.valueOf(action)) < prefs.getInt(action + ".good", 0)) {
                 setIcon(new ImageIcon(IMGROOT + "goodRange.png"));
             }
-            else if (getDaysSince(action) >= prefs.getInt(selectedActivity + ".good", 0)
-                  && getDaysSince(action) < prefs.getInt(selectedActivity + ".bad", 100)) {
+            else if (getDaysSince(Activities.valueOf(action)) >= prefs.getInt(action + ".good", 0)
+                  && getDaysSince(Activities.valueOf(action)) < prefs.getInt(action + ".bad", 100)) {
                 setIcon(new ImageIcon(IMGROOT + "decentRange.png"));
             }
             else {
@@ -166,8 +157,8 @@ public class Range extends JLabel {
                 parentGUI.getStartCallNumberController().setText(startCallNumber);
                 parentGUI.getEndCallNumberController().setText(endCallNumber);
 
-                for (String activity : dayLastMap.keySet()) {
-                    parentGUI.getDateControllers().get(activity).setDate(dayLastMap.get(activity));
+                for (Activities activity : Activities.values()){
+                    activity.getController().setDate(dayLastMap.get(activity));
                 }
 
                 updateColor("mousedover");

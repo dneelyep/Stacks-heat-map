@@ -1,5 +1,6 @@
 package com.heatmap;
 
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
@@ -27,7 +28,7 @@ public class Floor {
 	private Document floorDataFile;
 	
 	/** The path to this Floor's data file. */
-    // TODO Convert this path to a relative path.
+    // TODO Convert this path to a relative path. See System.getEnv()
     private String floorPath = "C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/bin/res/floorData/";
 	
 	/** Radio button used to display this Floor in the GUI. */
@@ -57,11 +58,11 @@ public class Floor {
         if ((floorNumber == 3 || floorNumber == 4) && !initialized) {
 			if (floorNumber == 3) {
 				floorPath += "thirdFloor.xml";
-                button = parentGUI.initWithCoords(new JRadioButton("3rd floor"), 0, 1);
+                button = parentGUI.initWithCoords(new JRadioButton("3rd floor"), new Point(0, 1));
 			}
 			else {
                 floorPath += "fourthFloor.xml";
-                button = parentGUI.initWithCoords(new JRadioButton("4th floor"), 0, 2);
+                button = parentGUI.initWithCoords(new JRadioButton("4th floor"), new Point(0, 2));
 			}
 
             read();
@@ -104,11 +105,10 @@ public class Floor {
 
             // Append the current Range's last checked Dates to the current Range element in the data file.
             int counter = 4;
-            for (String s : parentGUI.getDateControllers().keySet()) {
-                if (programRange.getDayLast(s) != null) {
-                    fileRangeChildren.get(counter).appendChild(formatter.format(programRange.getDayLast(s)));
-                }
-                counter++;
+            // TODO BUG HERE. Program keeps trying to get the Dates faced/dusted/read/etc on Ranges that have not had those values initialized.
+            for (Activities activity : Activities.values()) {
+                if (programRange.getDayLast(activity) != null)
+                    fileRangeChildren.get(counter).appendChild(formatter.format(programRange.getDayLast(activity)));
             }
         }
 
@@ -149,9 +149,9 @@ public class Floor {
                 DateFormat formatter = DateFormat.getDateInstance();
                 // TODO Since the problem is that we're reading an unparseable (empty)
                 // date, we need to handle that somehow. Set the date to a safe value?
-                for (String activity : parentGUI.getDateControllers().keySet()) {
+                for (Activities activity : Activities.values()) {
                     try {
-                        programRange.setDayLast(activity, formatter.parse(e.getFirstChildElement(activity).getValue()));
+                        programRange.setDayLast(activity, formatter.parse(e.getFirstChildElement(activity.toString()).getValue()));
                     } catch (ParseException p) {
                         System.out.println("Error parsing Date " + activity + ": " + p);
                     }
@@ -178,6 +178,7 @@ public class Floor {
 
     /** Update the colors of every Range located on this Floor according
      * to activity. */
+    // TODO Convert this to take Activities as an argument.
     public void updateRangeColors(String activity) {
         for (Range r : ranges) {
             r.updateColor(activity);

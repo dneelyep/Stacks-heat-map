@@ -1,7 +1,5 @@
 package com.heatmap;
 
-import org.jdesktop.swingx.JXDatePicker;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,7 +20,7 @@ public class GUI extends JApplet {
 
     /** Panel that contains the components for the shelf map. */
     // TODO Look into breaking floorComponents and its Ranges into a separate class.
-    private final JPanel floorComponents = initWithCoords(new JPanel(new GridBagLayout()), 1, 1);
+    private final JPanel floorComponents = initWithCoords(new JPanel(new GridBagLayout()), new Point(1, 1));
 
     /** Constraints used to place components in floorComponents. */
     private GridBagConstraints fCConstraints = new GridBagConstraints();
@@ -31,23 +29,19 @@ public class GUI extends JApplet {
     private Range focusedRange;
 
     /** Button to change attributes of the currently clicked Range. */
-    private final JButton submitData = initWithCoords(new JButton("Submit"), 6, 1);
+    private final JButton submitData = initWithCoords(new JButton("Submit"), new Point(6, 1));
 
     /** Button to cancel editing of a Range's information. */
-    private final JButton cancel = initWithCoords(new JButton("Cancel"), 6, 0);
+    private final JButton cancel = initWithCoords(new JButton("Cancel"), new Point(6, 0));
 
     /** Button to allow the user to close the application. */
-    private final JButton quit = initWithCoords(new JButton("Quit"), 6, 38);
+    private final JButton quit = initWithCoords(new JButton("Quit"), new Point(6, 38));
 
     /** The Floor currently being viewed by the user. */
     private Floor currentFloor = null;
 
     /** A bit of text that displays a title for the program. */
-    private final JLabel programTitle = initWithCoords(new JLabel("Stacks Cleanliness Heat Map"), 1, 0);
-
-    /** A Map of all the JRadioButtons that allow the user to change the
-     * activity they're viewing in the GUI. */
-    private LinkedHashMap<String, JRadioButton> viewDaysSinceMap = new LinkedHashMap<>(5);
+    private final JLabel programTitle = initWithCoords(new JLabel("Stacks Cleanliness Heat Map"), new Point(1, 0));
 
     /** Button group to only allow viewing the properties of a single property of Ranges at a time. */
     private final ButtonGroup viewDaysSinceButtons = new ButtonGroup();
@@ -68,13 +62,10 @@ public class GUI extends JApplet {
     private PreferencesFrame preferencesFrame = new PreferencesFrame(this);
 
     /** Field to change the clicked-on Range's starting call #. */
-    private final JTextField startCallNumberController = initWithCoords(new JTextField("", 10), 3, 0);
+    private final JTextField startCallNumberController = initWithCoords(new JTextField("", 10), new Point(3, 0));
 
     /** Field to change the clicked-on Range's ending call #. */
-    private final JTextField endCallNumberController = initWithCoords(new JTextField("", 10), 3, 1);
-
-    /** A Map of all the Date controllers in the GUI. */
-    private LinkedHashMap<String, JXDatePicker> dateControllers = new LinkedHashMap<>(5);
+    private final JTextField endCallNumberController = initWithCoords(new JTextField("", 10), new Point(3, 1));
 
     /** Floor that represents the library's third floor. */
     private Floor thirdFloor;
@@ -127,12 +118,6 @@ public class GUI extends JApplet {
         startCallNumberController.setMinimumSize(new Dimension(100, 20));
         endCallNumberController.setMinimumSize(new Dimension(100, 20));
 
-        dateControllers.put("checked", initWithCoords(new JXDatePicker(), 3, 2));
-        dateControllers.put("shifted", initWithCoords(new JXDatePicker(), 3, 3));
-        dateControllers.put("faced", initWithCoords(new JXDatePicker(), 3, 4));
-        dateControllers.put("dusted", initWithCoords(new JXDatePicker(), 3, 5));
-        dateControllers.put("read", initWithCoords(new JXDatePicker(), 3, 6));
-
         // TODO Use an action for menuQuit and quit, since they do the same thing?
         menuQuit.addActionListener(new ActionListener() {
             @Override
@@ -168,22 +153,21 @@ public class GUI extends JApplet {
 
         g.weighty = 0;
         g.gridheight = 1;
-        addComponent(initWithCoords(new JLabel("Start: "), 2, 0), g);
-        addComponent(initWithCoords(new JLabel("End: "), 2, 1), g);
-        addComponent(initWithCoords(new JLabel("Last checked: "), 2, 2), g);
-        addComponent(initWithCoords(new JLabel("Last shifted: "), 2, 3), g);
-        addComponent(initWithCoords(new JLabel("Last faced: "), 2, 4), g);
-        addComponent(initWithCoords(new JLabel("Last dusted: "), 2, 5), g);
-        addComponent(initWithCoords(new JLabel("Last read: "), 2, 6), g);
+        addComponent(initWithCoords(new JLabel("Start: "), new Point(2, 0)), g);
+        addComponent(initWithCoords(new JLabel("End: "), new Point(2, 1)), g);
+        addComponent(initWithCoords(new JLabel("Last checked: "), new Point(2, 2)), g);
+        addComponent(initWithCoords(new JLabel("Last shifted: "), new Point(2, 3)), g);
+        addComponent(initWithCoords(new JLabel("Last faced: "), new Point(2, 4)), g);
+        addComponent(initWithCoords(new JLabel("Last dusted: "), new Point(2, 5)), g);
+        addComponent(initWithCoords(new JLabel("Last read: "), new Point(2, 6)), g);
 
-        // TODO Review, replace any unneeded object arrays with uses of for (Object o : Arrays.asList(objects)).
         addComponent(startCallNumberController, g);
         addComponent(endCallNumberController, g);
 
-        for (JXDatePicker picker : dateControllers.values()) {
+        for (Activities activity : Activities.values()) {
             // Disallow setting the Date a task was completed to a future Date.
-            picker.getMonthView().setUpperBound(new Date());
-            addComponent(picker, g);
+            activity.getController().getMonthView().setUpperBound(new Date());
+            addComponent(activity.getController(), g);
         }
 
         cancel.addActionListener(new ActionListener() {
@@ -212,8 +196,8 @@ public class GUI extends JApplet {
                     focusedRange.setEnd(endCallNumberController.getText());
                 }
 
-                for (String key : dateControllers.keySet()) {
-                    focusedRange.setDayLast(key, dateControllers.get(key).getDate());
+                for (Activities activity : Activities.values()) {
+                    focusedRange.setDayLast(activity, activity.getController().getDate());
                 }
 
                 currentFloor.write();
@@ -224,30 +208,23 @@ public class GUI extends JApplet {
         submitData.setEnabled(false);
         addComponent(submitData, g);
 
-        viewDaysSinceMap.put("checked", initWithCoords(new JRadioButton("Checked"), 6, 2));
-        viewDaysSinceMap.put("shifted", initWithCoords(new JRadioButton("Shifted"), 6, 3));
-        viewDaysSinceMap.put("faced",   initWithCoords(new JRadioButton("Faced"),   6, 4));
-        viewDaysSinceMap.put("dusted",  initWithCoords(new JRadioButton("Dusted"),  6, 5));
-        viewDaysSinceMap.put("read",    initWithCoords(new JRadioButton("Read"),    6, 6));
-
-        viewDaysSinceMap.get("checked").setSelected(true);
+        Activities.checked.getViewer().setSelected(true);
 
         // Add buttons to their button group.
-        for (JRadioButton button : viewDaysSinceMap.values()) {
-            viewDaysSinceButtons.add(button);
+        for (Activities activity : Activities.values()) {
+            viewDaysSinceButtons.add(activity.getViewer());
         }
 
         // TODO Look into adding a ChangeListener to the viewDaysSince ButtonGroup rather than an ActionListener.
-        // TODO Rename viewDaysSinceMap to viewDaysSinceControllers OR activityViewedControllers
-        for (JRadioButton button : viewDaysSinceMap.values()) {
-            button.addActionListener(new ActionListener() {
+        for (Activities activity : Activities.values()) {
+            activity.getViewer().addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     currentFloor.updateRangeColors(getSelectedView().getText().toLowerCase());
                     updateLegend();
                 }
             });
-            addComponent(button, g);
+            addComponent(activity.getViewer(), g);
         }
 
         thirdFloor = new Floor(3, this);
@@ -263,7 +240,7 @@ public class GUI extends JApplet {
             setBorder(BorderFactory.createCompoundBorder(
                     BorderFactory.createTitledBorder("Legend"),
                     BorderFactory.createEmptyBorder(5, 5, 5, 5)));
-        }}, 5, 7);
+        }}, new Point(5, 7));
         legend.setBackground(Color.GRAY);
         legend.setLayout(new BoxLayout(legend, BoxLayout.PAGE_AXIS));
 
@@ -314,8 +291,8 @@ public class GUI extends JApplet {
         startCallNumberController.setText("");
         endCallNumberController.setText("");
 
-        for (JXDatePicker picker : dateControllers.values()) {
-            picker.setDate(new Date());
+        for (Activities activity : Activities.values()) {
+            activity.getController().setDate(new Date());
         }
     }
 
@@ -327,12 +304,9 @@ public class GUI extends JApplet {
             picker.setEnabled(b);
         }
 
-        for (JXDatePicker picker : dateControllers.values()) {
-            picker.setEnabled(b);
-        }
-
-        for (JRadioButton button : viewDaysSinceMap.values()) {
-            button.setEnabled(!b);
+        for (Activities activity : Activities.values()) {
+            activity.getController().setEnabled(b);
+            activity.getViewer().setEnabled(!b);
         }
 
         thirdFloor.getButton().setEnabled(!b);
@@ -364,19 +338,19 @@ public class GUI extends JApplet {
         allowInput(b);
     }
 
-    /** Add the coordinates (x,y) to any JComponent component. */
-    protected <T extends JComponent> T initWithCoords(T component, int x, int y) {
-        component.putClientProperty("x", x);
-        component.putClientProperty("y", y);
+    /** Add the coordinates of the Point point to any JComponent component. */
+    protected static <T extends JComponent> T initWithCoords(T component, Point point) {
+        component.putClientProperty("x", point.x);
+        component.putClientProperty("y", point.y);
         return component;
     }
 
     /** Get the Button that represents the activity that is currently displayed in the GUI. */
     protected AbstractButton getSelectedView() {
-        for (JRadioButton button : viewDaysSinceMap.values()) {
-            if (button.isSelected()) {
-                return button;
-            }
+        // TODO Shouldn't this be built in to ButtonGroup?
+        for (Activities activity : Activities.values()) {
+            if (activity.getViewer().isSelected())
+                return activity.getViewer();
         }
 
         // TODO This is a horrible way of handling when no button is selected. Fix it.
@@ -397,11 +371,6 @@ public class GUI extends JApplet {
     /** Set the current floor being viewed in this GUI. */
     public void setCurrentFloor(Floor floor) {
         currentFloor = floor;
-    }
-
-    /** Get a hash map of all Date controllers used in this GUI. */
-    public LinkedHashMap<String, JXDatePicker> getDateControllers() {
-        return dateControllers;
     }
 
     /** Get the GUI component that changes the focused Range's start call number. */
