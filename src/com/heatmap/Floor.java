@@ -6,6 +6,9 @@ import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -38,7 +41,7 @@ public class Floor {
     private GUI parentGUI;
 	
 	/** Create a new Floor using floorNumber to determine layout. */
-	public Floor(int floorNumber, GUI gui) {
+	public Floor(Floor_Values floorNumber, GUI gui) {
         parentGUI = gui;
 		makeFloor(floorNumber);
 
@@ -54,11 +57,10 @@ public class Floor {
 	}
 
 	/** Create a set of Ranges that represents a Floor of the library. */
-    // TODO Make an enum of valid Floors.
-	private void makeFloor(int floorNumber) {
-        if ((floorNumber == 3 || floorNumber == 4) && !initialized) {
-			if (floorNumber == 3) {
-				floorPath += "thirdFloor.xml";
+	private void makeFloor(Floor_Values floor) {
+        if (!initialized) {
+            if (floor == Floor_Values.third) {
+				floorPath += "thirdFloor.xml"; // TODO Store this data in the enum. Or not, will get rid of it soon.
                 button = parentGUI.initWithCoords(new JRadioButton("3rd floor"), new Point(0, 1));
 			}
 			else {
@@ -72,9 +74,6 @@ public class Floor {
             // only allowing it to be initialized once as I'm doing here. Maybe an enumeration?
             // Or make ranges final, so it can't be overridden later? Or make this object final?
             initialized = true;
-		}
-		else {
-			System.out.println("Error! Tried to create a Floor that does not exist.");			
 		}
 	}
 	
@@ -165,6 +164,13 @@ public class Floor {
         catch (IOException e) {
             System.err.println("IOException: " + e);
         }
+
+        // LEFTOFFHERE: Imported all data into database, and now working on my Database class, to let me query for data.
+        // Now I need to use that class to parse floor data for ranges, and replace my current XML parsing with SQL
+        // queries. Once that's done, I should be able to remove my XML storage and use the database for everything in
+        // the project.
+        Connection connection = Database.getConnection();
+        Database.executeQuery();
     }
 
     /** Get an ArrayList of this Floor's Ranges.*/
@@ -185,4 +191,8 @@ public class Floor {
             r.updateColor(activity);
         }
     }
+}
+
+enum Floor_Values {
+    third, fourth;
 }
