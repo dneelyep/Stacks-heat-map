@@ -5,7 +5,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 import java.util.prefs.Preferences;
 
 import javax.swing.*;
@@ -92,6 +94,7 @@ public class GUI extends JApplet {
                     createGUI();
                 }
             });
+
         } catch (Exception e) {
             System.err.println("createGUI didn't complete successfully: " + e);
         }
@@ -261,6 +264,52 @@ public class GUI extends JApplet {
 
         displayFloor(currentFloor);
         allowInput(false);
+
+        // ===============
+        // SQL magic here.
+        // ===============
+        // TODO Clean this up, break it into methods, put them in proper locations.
+
+        // Make a connection.
+        Connection conn = null;
+        Properties connectionProps = new Properties();
+        // TODO Give root an actual password, and/or make a restricted permissions user for this application.
+        connectionProps.put("user", "root");
+        connectionProps.put("password", "");
+        try {
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", connectionProps);
+        } catch (SQLException e) {
+            JPanel errorPanel = new JPanel();
+            JOptionPane.showMessageDialog(errorPanel, "Error! Could not connect to the database.",
+                    "Could not connect to database.", JOptionPane.ERROR_MESSAGE);
+            // TODO Add the stack trace to the panel, to be used in debugging?
+            //errorPanel.add(new JLabel(e.getStackTrace().toString()));
+            System.exit(0);
+        }
+
+        // Run queries.
+        String query = "SELECT * FROM stacks_heat_map_db.book_range";
+        Statement stmt = null;
+        try {
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+            while (rs.next()) {
+                int parentFloor = rs.getInt("parent_floor");
+                int xCoord = rs.getInt("x_coord");
+                int yCoord = rs.getInt("y_coord");
+                System.out.println(parentFloor + "\t" + xCoord + "\t" + yCoord);
+            }
+        } catch (SQLException e ) {
+            e.printStackTrace();
+        } finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     /** Display a given Floor floor's Ranges on this GUI, coloring

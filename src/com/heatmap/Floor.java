@@ -54,6 +54,7 @@ public class Floor {
 	}
 
 	/** Create a set of Ranges that represents a Floor of the library. */
+    // TODO Make an enum of valid Floors.
 	private void makeFloor(int floorNumber) {
         if ((floorNumber == 3 || floorNumber == 4) && !initialized) {
 			if (floorNumber == 3) {
@@ -185,22 +186,3 @@ public class Floor {
         }
     }
 }
-
-// 3rd floor book shelves:
-// 15 * 2 = 30
-// 13 * 2 = 26
-// 7      =  7
-// 12 * 2 = 24
-// 11 * 2 = 22
-// 24     = 24
-// 15 * 2 = 30
-// ===========
-//         163
-
-
-// 4th floor book shelves:
-// 15 * 2 = 30
-// 11 * 3 = 33
-// 15 * 2 = 30
-// ===========
-//          93
