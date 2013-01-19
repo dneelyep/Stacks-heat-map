@@ -275,16 +275,16 @@ public class GUI extends JApplet {
             floorComponents.removeAll();
             floor.updateRangeColors(getSelectedView().getText().toLowerCase());
 
-            for (Range r : floor.getRanges()) {
-                fCConstraints.gridx = r.getXCoord();
-                fCConstraints.gridy = r.getYCoord();
-                floorComponents.add(r, fCConstraints);
+            for (Range range : floor.getRanges()) {
+                fCConstraints.gridx = range.getXCoord();
+                fCConstraints.gridy = range.getYCoord();
+                floorComponents.add(range, fCConstraints);
             }
 
             floorComponents.revalidate();
             programTitle.setText("Stacks Cleanliness Heat Map | " + floor.getButton().getText());
         }
-    }
+     }
 
     /** Clear all input fields on this GUI of their data. */
     private void clearInput() {

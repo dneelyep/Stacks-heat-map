@@ -23,6 +23,7 @@ public class Range extends JLabel {
 	/** The last call number in this Range. */
 	private String endCallNumber;
 
+    // TODO Need to include a way of displaying no data for a given Range/column.
     /** Map that holds the Date this Range last had given Activities done to it. */
     private HashMap<Activities, Date> dayLastMap = new HashMap<>(5);
 
@@ -39,7 +40,7 @@ public class Range extends JLabel {
 	public Range(int x, int y, GUI gui) {
 		XCOORD = x;
 		YCOORD = y;
-        setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/res/bin/defaultRange.png"));
+        setIcon(new ImageIcon("C:/Users/Daniel/Desktop/Programming/Java/Stacks-heat-map/bin/res/bin/defaultRange.png"));
         addMouseListener(new MouseEventHandler());
         parentGUI = gui;
     }
@@ -77,7 +78,7 @@ public class Range extends JLabel {
     /** Set the Date this Range last had activity done to it to a new Date desiredActivityDate. */
     public void setDayLast(Activities activity, Date desiredDate) {
         dayLastMap.put(activity, desiredDate);
-        updateColor(activity.toString());
+        updateColor(activity.toString()); // TODO Have updateColor take an activity rather than a String.
     }
 
     /** Get the date this Range last had a given activity done to it. */
@@ -93,16 +94,7 @@ public class Range extends JLabel {
     /** Get the number of days since a given
      * activity was performed on this Range. */
     private int getDaysSince(Activities activity) {
-        Calendar c = Calendar.getInstance();
-
-        if (dayLastMap.containsKey(activity)) {
-            return Days.daysBetween(new DateTime(dayLastMap.get(activity)), new DateTime(c.getTime())).getDays();
-        }
-        else {
-            // TODO Handle this more elegantly than returning a 0.
-            System.err.println("Error! Attempted to get the number of days since an invalid activity was performed: " + activity.toString());
-            return 0;
-        }
+        return Days.daysBetween(new DateTime(dayLastMap.get(activity)), new DateTime(Calendar.getInstance().getTime())).getDays();
     }
 
 	/** Re-set the color for this Range. If this Range has been clicked, use
@@ -120,18 +112,15 @@ public class Range extends JLabel {
             setIcon(new ImageIcon(IMGROOT + "mousedOverRange.png"));
         }
         else {
+            // TODO See if I can get rid of the Submit button altogether, and have data automatically submitted.
             Preferences prefs = Preferences.userNodeForPackage(getClass());
 
-            if (getDaysSince(Activities.valueOf(action)) < prefs.getInt(action + ".good", 0)) {
+            if (getDaysSince(Activities.valueOf(action)) < prefs.getInt(action + ".good", 0))
                 setIcon(new ImageIcon(IMGROOT + "goodRange.png"));
-            }
-            else if (getDaysSince(Activities.valueOf(action)) >= prefs.getInt(action + ".good", 0)
-                  && getDaysSince(Activities.valueOf(action)) < prefs.getInt(action + ".bad", 100)) {
-                setIcon(new ImageIcon(IMGROOT + "decentRange.png"));
-            }
-            else {
+            else if (getDaysSince(Activities.valueOf(action)) >= prefs.getInt(action + ".bad", 0))
                 setIcon(new ImageIcon(IMGROOT + "badRange.png"));
-            }
+            else
+                setIcon(new ImageIcon(IMGROOT + "decentRange.png"));
         }
 	}
 
