@@ -40,11 +40,16 @@ public class Database {
         ResultSet results = null;
         try {
             stmt = getConnection().createStatement();
-            results = stmt.executeQuery("SELECT * FROM stacks_heat_map_db.book_range");
+            results = stmt.executeQuery("SELECT * FROM stacks_heat_map_db.book_range WHERE parent_floor = 2");
             while (results.next()) {
                 System.out.println("Floor: " + results.getInt("parent_floor") + " X: "
                         + results.getInt("x_coord") + " Y: " + results.getInt("y_coord"));
             }
+            // Print the number of results in the query.
+            // TODO Make this a method?
+            results.last();
+            System.out.println("Results: " + results.getRow());
+            results.first();
         } catch (SQLException e ) {
             e.printStackTrace();
         } finally {

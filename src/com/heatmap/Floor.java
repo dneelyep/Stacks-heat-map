@@ -3,10 +3,10 @@ package com.heatmap;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.Statement;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -15,6 +15,7 @@ import java.util.ArrayList;
 
 import javax.swing.JRadioButton;
 
+import com.sun.deploy.util.UpdateCheck;
 import nu.xom.*;
 
 /** Class to represent a floor in the library. */
@@ -39,11 +40,15 @@ public class Floor {
 
     /** The GUI that holds this Floor. */
     private GUI parentGUI;
+
+    /** The value of this Floor. */
+    private Floor_Values floorValue;
 	
 	/** Create a new Floor using floorNumber to determine layout. */
 	public Floor(Floor_Values floorNumber, GUI gui) {
+        floorValue = floorNumber;
         parentGUI = gui;
-		makeFloor(floorNumber);
+		makeFloor(floorValue);
 
         button.addMouseListener(new MouseAdapter() {
             @Override
@@ -80,7 +85,7 @@ public class Floor {
 	/** Store the information for every Range on this Floor 
 	 * into this Floor's data file. */
 	 void write() {
-		Element root = floorDataFile.getRootElement();
+		/*Element root = floorDataFile.getRootElement();
 		Elements fileRanges = root.getChildElements();
 
          // Iterate through every Range in the file.
@@ -120,14 +125,42 @@ public class Floor {
 		  out.write(floorDataFile.toXML());
 		  out.close();
 		}
-		catch (Exception e) {
+        catch (Exception e) {
 		  System.err.println("Error: " + e.getMessage());
-		}
+        }*/
+
+        // SQL
+         for (Range range : ranges) {
+
+             // LEFTOFFHERE: In the process of converting data storage over to using MySQL. Got the data stored and I'm
+             // reading it correctly, now I'm working on storing the data (writing it) in the database here.
+             //"SELECT * FROM stacks_heat_map_db.book_range WHERE parent_floor = " + (floorValue == Floor_Values.third ? 1 : 2));
+             /*range.getStart()
+             range.getEnd()*/
+
+             "SELECT text_value FROM call_number"
+
+             System.out.println(
+                     "UPDATE shelf_column SET shelf_column.start_call_number=" + range.getStart() + " shelf_column.end_call_number=" + range.getEnd() +
+                     " FROM shelf_column JOIN book_range ON shelf_column.parent_range = book_range.id" +
+                     " WHERE book_range.x_coord=" + range.getXCoord() + " AND book_range.y_coord=" + range.getYCoord());
+
+             /*DateFormat formatter = DateFormat.getDateInstance();
+
+             // Append the current Range's last checked Dates to the current Range element in the data file.
+             int counter = 4;
+             // TODO BUG HERE. Program keeps trying to get the Dates faced/dusted/read/etc on Ranges that have not had those values initialized.
+             for (Activities activity : Activities.values()) {
+                 if (programRange.getDayLast(activity) != null)
+                     fileRangeChildren.get(counter).appendChild(formatter.format(programRange.getDayLast(activity)));
+             }*/
+         }
 	}
 
     /** Attempt to read in this Floor's Range data from the data file. */
     private void read() {
-        try {
+        // TODO REMOVE ME when I'm finished converting data storage to the database.
+        /*try {
             floorDataFile = new Builder().build(floorPath);
             Element root = floorDataFile.getRootElement();
             Elements rangeElements = root.getChildElements();
@@ -163,13 +196,34 @@ public class Floor {
         }
         catch (IOException e) {
             System.err.println("IOException: " + e);
-        }
+        }*/
 
-        // LEFTOFFHERE: Imported all data into database, and now working on my Database class, to let me query for data.
-        // Now I need to use that class to parse floor data for ranges, and replace my current XML parsing with SQL
-        // queries. Once that's done, I should be able to remove my XML storage and use the database for everything in
-        // the project.
-        Database.executeQuery();
+        Statement statement = null;
+        ResultSet results = null;
+        try {
+            statement = Database.getConnection().createStatement();
+            results = statement.executeQuery(
+                    "SELECT * FROM stacks_heat_map_db.book_range WHERE parent_floor = " + (floorValue == Floor_Values.third ? 1 : 2));
+
+            // TODO Make this a method to get size of a result set?
+            results.last();
+            ranges = new ArrayList<>(results.getRow());
+            results.first();
+
+            do {
+                ranges.add(new Range(results.getInt("x_coord"), results.getInt("y_coord"), parentGUI));
+                // TODO Since I'm storing the range data in columns, I can't really set start/end values for ranges yet.
+                //ranges.get(ranges.size()).setStart(results.getString());
+            } while (results.next());
+
+        } catch (SQLException e ) {
+            e.printStackTrace();
+        } finally {
+            if (statement != null) {
+                try { statement.close(); }
+                catch (SQLException e) { e.printStackTrace(); }
+            }
+        }
     }
 
     /** Get an ArrayList of this Floor's Ranges.*/

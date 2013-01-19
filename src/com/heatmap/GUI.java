@@ -234,7 +234,7 @@ public class GUI extends JApplet {
         fourthFloor = new Floor(Floor_Values.fourth, this);
         currentFloor = thirdFloor;
 
-        thirdFloor.getButton().setSelected(true);
+        currentFloor.getButton().setSelected(true);
         floorButtons.add(thirdFloor.getButton());
         floorButtons.add(fourthFloor.getButton());
 
