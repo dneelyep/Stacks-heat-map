@@ -169,7 +169,6 @@ public class Floor {
         // Now I need to use that class to parse floor data for ranges, and replace my current XML parsing with SQL
         // queries. Once that's done, I should be able to remove my XML storage and use the database for everything in
         // the project.
-        Connection connection = Database.getConnection();
         Database.executeQuery();
     }
 
